@@ -1,16 +1,8 @@
-using UnityEngine;
-
-public class Extensions : MonoBehaviour
+/// <summary>
+/// 扩展方法（占位，待实现）
+/// 扩展方法需为 public static，第一个参数带 this
+/// </summary>
+public static class Extensions
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // 待添加扩展方法
 }

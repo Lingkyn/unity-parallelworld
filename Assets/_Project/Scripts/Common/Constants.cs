@@ -1,16 +1,7 @@
-using UnityEngine;
-
-public class Constants : MonoBehaviour
+/// <summary>
+/// 全局常量（占位，待实现）
+/// </summary>
+public static class Constants
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // 待添加常量
 }
