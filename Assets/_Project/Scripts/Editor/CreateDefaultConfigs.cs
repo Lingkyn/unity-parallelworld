@@ -26,6 +26,12 @@ namespace ParallelWorld.Editor
                 if (createdMovement) created++; else skipped++;
             }
 
+            // CameraConfig
+            if (TryCreateConfig<CameraConfig>("CameraConfig.asset", out bool createdCamera))
+            {
+                if (createdCamera) created++; else skipped++;
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
