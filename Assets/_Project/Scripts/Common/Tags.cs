@@ -1,16 +1,8 @@
-using UnityEngine;
-
-public class Tags : MonoBehaviour
+/// <summary>
+/// Tag 标签常量（占位，待实现）
+/// 例如：public const string Player = "Player";
+/// </summary>
+public static class Tags
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // 待添加 Tag 常量
 }
