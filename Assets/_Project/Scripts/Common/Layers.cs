@@ -1,8 +1,16 @@
-/// <summary>
-/// Layer 层名称常量（占位，待实现）
-/// 例如：public const string Player = "Player";
-/// </summary>
-public static class Layers
+using UnityEngine;
+
+public class Layers : MonoBehaviour
 {
-    // 待添加 Layer 常量
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
 }
