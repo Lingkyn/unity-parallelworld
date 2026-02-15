@@ -1,16 +1,12 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+namespace ParallelWorld
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    /// <summary>
+    /// 已由 CameraController 替代。请使用 CameraController 获得空洞骑士风格相机跟随。
+    /// 此类保留仅为兼容，可安全移除。
+    /// </summary>
+    public class CameraFollow : MonoBehaviour
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
