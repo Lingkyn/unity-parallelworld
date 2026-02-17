@@ -52,7 +52,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2334878942531841443, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2334878942531841443, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -114,11 +114,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -126,15 +126,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: -0.000000020536255
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.0000000032679128
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: -0.0000000015564712
       objectReference: {fileID: 0}
     - target: {fileID: 8128913089795748798, guid: 264571e6a20c9e04f96a3baa9f7a159c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -166,6 +166,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2150111801725202691}
     m_Modifications:
+    - target: {fileID: 219227524139673883, guid: 827c98fb815d8fe4d90e35fcf3d36031, type: 3}
+      propertyPath: FollowOffset.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4700924818207578432, guid: 827c98fb815d8fe4d90e35fcf3d36031, type: 3}
       propertyPath: m_Name
       value: CinemachineCamera
