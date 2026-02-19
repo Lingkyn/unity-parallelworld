@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 282502600}
   - component: {fileID: 282502599}
   m_Layer: 6
-  m_Name: Cube (1)
+  m_Name: BottleShadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -166,7 +166,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 282502598}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 3
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -221,11 +221,11 @@ Transform:
   m_GameObject: {fileID: 282502598}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.14, y: 0.17, z: -3.73}
+  m_LocalPosition: {x: 10.14, y: 2.1700008, z: 16.27}
   m_LocalScale: {x: 1.55, y: 5.25, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1000501980}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &410087039
 GameObject:
@@ -360,6 +360,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.x
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1475810850372530451, guid: 1316e626ffeb7034da215ead4a993346, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -10
+      objectReference: {fileID: 0}
     - target: {fileID: 2150111801725202691, guid: 1316e626ffeb7034da215ead4a993346, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -411,6 +415,10 @@ PrefabInstance:
     - target: {fileID: 8992296502479737905, guid: 1316e626ffeb7034da215ead4a993346, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8992296502479737905, guid: 1316e626ffeb7034da215ead4a993346, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8992296502479737905, guid: 1316e626ffeb7034da215ead4a993346, type: 3}
       propertyPath: m_LocalPosition.z
@@ -724,7 +732,6 @@ Transform:
   m_Children:
   - {fileID: 998083912}
   - {fileID: 720813316}
-  - {fileID: 282502602}
   - {fileID: 1641873767}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -949,6 +956,9 @@ MonoBehaviour:
     m_Bits: 0
   lookAtCamera: 1
   debugLog: 1
+  designatedLight: {fileID: 410087040}
+  lightYRotationRange: 200
+  lightYRotationSensitivity: 3
 --- !u!114 &1739643719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -973,7 +983,7 @@ GameObject:
   - component: {fileID: 1863667263}
   - component: {fileID: 1863667262}
   m_Layer: 0
-  m_Name: bottle
+  m_Name: Bottle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1059,3 +1069,4 @@ SceneRoots:
   - {fileID: 1000501980}
   - {fileID: 1683965162}
   - {fileID: 1863667263}
+  - {fileID: 282502602}

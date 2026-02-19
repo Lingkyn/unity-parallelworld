@@ -21,8 +21,17 @@ namespace ParallelWorld
         private bool lookAtCamera = true;
         [SerializeField, Tooltip("勾选后在 Console 输出检测调试信息")]
         private bool debugLog;
+        [Header("光跟随")]
+        [SerializeField, Tooltip("指定跟随光圈左右移动而 Y 轴小范围转动的光")]
+        private Light designatedLight;
+        [SerializeField, Tooltip("光 Y 轴旋转范围（总角度，如 20 表示 ±10°）")]
+        private float lightYRotationRange = 10f;
+        [SerializeField, Tooltip("光圈 X 每移动 1 单位，光 Y 旋转的度数")]
+        private float lightYRotationSensitivity = 0.5f;
 
         private ApertureCore _apertureCore;
+        private float _baseLightY;
+
         private Transform _target;
         private readonly List<GameObject> _inLight = new List<GameObject>();
         private string[] _lastInRangeNames = System.Array.Empty<string>();
@@ -79,6 +88,9 @@ namespace ParallelWorld
             _apertureCore.Init(initialScale, defaultActive);
 
             Target.gameObject.SetActive(defaultActive);
+
+            if (designatedLight != null)
+                _baseLightY = designatedLight.transform.eulerAngles.y;
         }
 
         private void Update()
@@ -94,6 +106,11 @@ namespace ParallelWorld
                 {
                     RestoreAll();
                     _inLight.Clear();
+                    if (designatedLight != null)
+                    {
+                        var e = designatedLight.transform.eulerAngles;
+                        designatedLight.transform.eulerAngles = new Vector3(e.x, _baseLightY, e.z);
+                    }
                 }
                 return;
             }
@@ -125,6 +142,16 @@ namespace ParallelWorld
             _apertureCore.UpdateScale(scrollDelta, scaleSpeed, minScale, maxScale);
             float scale = _apertureCore.Scale;
             Target.localScale = new Vector3(scale, scale, scale);
+
+            // 光圈左右移动时，指定光的 Y 轴小范围转动
+            if (designatedLight != null)
+            {
+                float halfRange = lightYRotationRange * 0.5f;
+                float offset = Target.position.x * lightYRotationSensitivity;
+                offset = Mathf.Clamp(offset, -halfRange, halfRange);
+                var euler = designatedLight.transform.eulerAngles;
+                designatedLight.transform.eulerAngles = new Vector3(euler.x, _baseLightY + offset, euler.z);
+            }
         }
 
         private void LateUpdate()
