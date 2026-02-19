@@ -26,6 +26,12 @@ namespace ParallelWorld.Editor
                 if (createdMovement) created++; else skipped++;
             }
 
+            // ApertureConfig
+            if (TryCreateConfig<ApertureConfig>("ApertureConfig.asset", out bool createdAperture))
+            {
+                if (createdAperture) created++; else skipped++;
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
