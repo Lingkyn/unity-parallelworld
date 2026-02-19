@@ -1,8 +1,10 @@
 /// <summary>
-/// Layer 层名称常量（占位，待实现）
-/// 例如：public const string Player = "Player";
+/// Layer 层名称常量
 /// </summary>
 public static class Layers
 {
-    // 待添加 Layer 常量
+    /// <summary>
+    /// 受光圈影响的对象层 (User Layer 6)
+    /// </summary>
+    public const string ApertureAffected = "ApertureAffected";
 }
