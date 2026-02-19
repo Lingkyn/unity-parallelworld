@@ -64,30 +64,5 @@ namespace ParallelWorld
             maxY = center.y + radius;
         }
 
-        /// <summary>
-        /// 获取对象 XY 在光圈范围内的对象（用 FindObjectsByType，因 Collider 可能在光圈外被禁用）
-        /// </summary>
-        public static GameObject[] GetObjectsInApertureBounds(float minX, float maxX, float minY, float maxY, LayerMask layerMask)
-        {
-            var colliders = Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            var result = new System.Collections.Generic.List<GameObject>();
-            var seen = new System.Collections.Generic.HashSet<GameObject>();
-
-            foreach (var c in colliders)
-            {
-                if (c == null || c.gameObject == null) continue;
-                if (((1 << c.gameObject.layer) & layerMask) == 0) continue;
-                if (seen.Contains(c.gameObject)) continue;
-
-                Vector3 pos = c.transform.position;
-                if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY)
-                {
-                    seen.Add(c.gameObject);
-                    result.Add(c.gameObject);
-                }
-            }
-
-            return result.ToArray();
-        }
     }
 }

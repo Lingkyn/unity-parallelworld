@@ -30,6 +30,7 @@ namespace ParallelWorld
         private float lightYRotationSensitivity = 0.5f;
 
         private ApertureCore _apertureCore;
+        private ApertureAffectedCache _cache;
         private float _baseLightY;
 
         private Transform _target;
@@ -51,9 +52,11 @@ namespace ParallelWorld
                 col.enabled = enabled;
         }
 
-        private static bool SetChanged(string[] prev, GameObject[] curr, out string[] names)
+        private static bool SetChanged(string[] prev, IReadOnlyList<GameObject> curr, out string[] names)
         {
-            var currNames = System.Array.ConvertAll(curr, g => g != null ? g.name : "");
+            var currNames = new string[curr.Count];
+            for (int i = 0; i < curr.Count; i++)
+                currNames[i] = curr[i] != null ? curr[i].name : "";
             System.Array.Sort(currNames);
             names = currNames;
             if (prev.Length != currNames.Length) return true;
@@ -88,6 +91,9 @@ namespace ParallelWorld
             _apertureCore.Init(initialScale, defaultActive);
 
             Target.gameObject.SetActive(defaultActive);
+
+            _cache = new ApertureAffectedCache();
+            _cache.Build(affectedLayerMask);
 
             if (designatedLight != null)
                 _baseLightY = designatedLight.transform.eulerAngles.y;
@@ -161,15 +167,11 @@ namespace ParallelWorld
             if (!_initialized)
             {
                 _initialized = true;
-                foreach (var mr in FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var go in _cache.All)
                 {
-                    if (((1 << mr.gameObject.layer) & affectedLayerMask) != 0)
-                        mr.enabled = false;
-                }
-                foreach (var col in FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                {
-                    if (((1 << col.gameObject.layer) & affectedLayerMask) != 0)
-                        col.enabled = false;
+                    if (go == null) continue;
+                    SetMeshRenderersEnabled(go, false);
+                    SetCollidersEnabled(go, false);
                 }
             }
 
@@ -177,7 +179,7 @@ namespace ParallelWorld
             float radius = _apertureCore.Scale * 0.5f;
             RangeDetector.GetApertureBounds(center, radius, out float minX, out float maxX, out float minY, out float maxY);
 
-            var inRange = RangeDetector.GetObjectsInApertureBounds(minX, maxX, minY, maxY, affectedLayerMask);
+            var inRange = _cache.GetInBounds(minX, maxX, minY, maxY);
 
             if (debugLog && SetChanged(_lastInRangeNames, inRange, out _lastInRangeNames))
                 Debug.Log($"[Aperture] 检测变化: {string.Join(", ", _lastInRangeNames)}");
@@ -197,8 +199,7 @@ namespace ParallelWorld
             {
                 var go = _inLight[i];
                 if (go == null) { _inLight.RemoveAt(i); continue; }
-                Vector3 p = go.transform.position;
-                if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY)
+                if (!inRange.Contains(go))
                 {
                     SetMeshRenderersEnabled(go, false);
                     SetCollidersEnabled(go, false);
