@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b58effcda62c60e4282d92067d1adc93, type: 3}
   m_Name: ApertureConfig
   m_EditorClassIdentifier: 
-  planeDistance: 10
+  planeDistance: 5
   minScale: 1
   maxScale: 10
   scaleSpeed: 2

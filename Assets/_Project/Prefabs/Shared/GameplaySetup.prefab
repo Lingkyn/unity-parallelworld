@@ -128,16 +128,90 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8800997700112233445, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+      propertyPath: realPlayer
+      value: 
+      objectReference: {fileID: 8663129176050603445}
+    - target: {fileID: 8800997700112233445, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+      propertyPath: shadowPlayer
+      value: 
+      objectReference: {fileID: 2605907224897448084}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9074304018427261282, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8282862996273180052}
+    - targetCorrespondingSourceObject: {fileID: 2449381689033673795, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2187967433108275288}
   m_SourcePrefab: {fileID: 100100000, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+--- !u!1 &2605907224897448084 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2449381689033673795, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+  m_PrefabInstance: {fileID: 421079398193571031}
+  m_PrefabAsset: {fileID: 0}
+--- !u!143 &2187967433108275288
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2605907224897448084}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &2715900906963356020 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2334878942531841443, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
   m_PrefabInstance: {fileID: 421079398193571031}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8663129176050603445 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9074304018427261282, guid: dfc675f793b2af246b370427b3ae3cf5, type: 3}
+  m_PrefabInstance: {fileID: 421079398193571031}
+  m_PrefabAsset: {fileID: 0}
+--- !u!143 &8282862996273180052
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8663129176050603445}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &866025267670722447
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -452,7 +526,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 67378757707600805, guid: 3fc5e4519c7715d4390edbaaea1d8a79, type: 3}
       propertyPath: m_Name
-      value: Circle
+      value: Aperture
       objectReference: {fileID: 0}
     - target: {fileID: 6921079078286521598, guid: 3fc5e4519c7715d4390edbaaea1d8a79, type: 3}
       propertyPath: m_LocalPosition.x
