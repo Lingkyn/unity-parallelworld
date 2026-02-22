@@ -3,14 +3,20 @@ using UnityEngine;
 namespace ParallelWorld
 {
     /// <summary>
-    /// Unity 壳：挂载于 GameObject，驱动 MovementSystem，将结果应用到 CharacterController / Sprite / Animator
-    /// 不写规则，不保存核心状态，仅作为生命周期入口与组件适配层
+    /// Unity 壳：挂载于 Player，驱动 MovementSystem，将结果应用到 RealPlayer / ShadowPlayer 的 CharacterController
+    /// 双躯体 XY 同步，Z 轴各自保持（ShadowPlayer 用于深度/层级）
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
     public class MovementController : MonoBehaviour
     {
         [SerializeField] private InputAdapter inputAdapter;
         [SerializeField] private MovementConfig config;
+        [Header("躯体引用")]
+        [SerializeField, Tooltip("实体玩家（含 CharacterController）")]
+        private Transform realPlayer;
+        [SerializeField, Tooltip("影子玩家（含 CharacterController）")]
+        private Transform shadowPlayer;
+        [SerializeField, Tooltip("ShadowPlayer 的 Z 轴偏移（用于深度）")]
+        private float shadowZOffset = 10f;
         [Header("纸片翻转")]
         [SerializeField, Tooltip("需要随移动方向翻转的 Sprite（如 RealPlayer、ShadowPlayer 的 Sprite）")]
         private SpriteRenderer[] spriteRenderers;
@@ -19,7 +25,8 @@ namespace ParallelWorld
         [SerializeField, Tooltip("Animator 列表：用于在翻转时触发 Flip 动画")]
         private Animator[] animators;
 
-        private CharacterController _controller;
+        private CharacterController _realController;
+        private CharacterController _shadowController;
         private Transform _cameraTransform;
         private bool _hasCamera;
         private MovementSystem _movementSystem;
@@ -27,7 +34,27 @@ namespace ParallelWorld
 
         private void Awake()
         {
-            _controller = GetComponent<CharacterController>();
+            if (realPlayer == null || shadowPlayer == null)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.name.Equals("RealPlayer", System.StringComparison.OrdinalIgnoreCase))
+                        realPlayer = child;
+                    else if (child.name.Equals("ShadowPlayer", System.StringComparison.OrdinalIgnoreCase))
+                        shadowPlayer = child;
+                }
+            }
+
+            if (realPlayer != null)
+                _realController = realPlayer.GetComponent<CharacterController>();
+            if (shadowPlayer != null)
+                _shadowController = shadowPlayer.GetComponent<CharacterController>();
+
+            if (_realController == null)
+                Debug.LogWarning("[MovementController] RealPlayer 未找到 CharacterController");
+            if (_shadowController == null)
+                Debug.LogWarning("[MovementController] ShadowPlayer 未找到 CharacterController");
+
             if (inputAdapter == null)
                 inputAdapter = GetComponent<InputAdapter>();
             if (config == null)
@@ -41,12 +68,18 @@ namespace ParallelWorld
 
         private void Update()
         {
+            if (_realController == null || _shadowController == null) return;
+
+            Transform activeTransform = realPlayer.gameObject.activeInHierarchy ? realPlayer : shadowPlayer;
+            CharacterController activeController = activeTransform == realPlayer ? _realController : _shadowController;
+            if (activeController == null || !activeController.gameObject.activeInHierarchy) return;
+
             float dt = Time.deltaTime;
             MovementParams p = BuildParams();
 
             Vector2 moveIntent = inputAdapter != null ? inputAdapter.GetMoveIntent() : Vector2.zero;
             bool jumpPressed = inputAdapter != null && inputAdapter.GetJumpPressed();
-            bool isGrounded = _controller.isGrounded;
+            bool isGrounded = activeController.isGrounded;
 
             Vector3 forward, right;
             GetForwardRight(out forward, out right);
@@ -63,9 +96,32 @@ namespace ParallelWorld
             };
 
             MovementResult result = _movementSystem.Tick(input, p);
+            Vector3 velocity = result.Velocity * dt;
 
-            _controller.Move(result.Velocity * dt);
+            activeController.Move(velocity);
+
+            SyncXYAndParent(activeTransform);
             UpdateSpriteFlip(result.MoveDirection);
+        }
+
+        /// <summary>
+        /// 同步父物体跟随当前 active 躯体，并更新 inactive 躯体的位置以便切换时正确
+        /// </summary>
+        private void SyncXYAndParent(Transform activeTransform)
+        {
+            if (realPlayer == null || shadowPlayer == null) return;
+
+            Vector3 activePos = activeTransform.position;
+            Transform inactive = activeTransform == realPlayer ? shadowPlayer : realPlayer;
+
+            if (activeTransform == realPlayer)
+                inactive.position = new Vector3(activePos.x, activePos.y, activePos.z + shadowZOffset);
+            else
+                inactive.position = new Vector3(activePos.x, activePos.y, activePos.z - shadowZOffset);
+
+            transform.position = new Vector3(activePos.x, activePos.y, activeTransform == realPlayer ? activePos.z : activePos.z - shadowZOffset);
+            realPlayer.localPosition = Vector3.zero;
+            shadowPlayer.localPosition = new Vector3(0f, 0f, shadowZOffset);
         }
 
         private MovementParams BuildParams()

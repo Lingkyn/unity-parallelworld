@@ -13,6 +13,7 @@ namespace ParallelWorld
 
         private InputAction _moveAction;
         private InputAction _jumpAction;
+        private InputAction _togglePlayerAction;
 
         private void Awake()
         {
@@ -29,20 +30,24 @@ namespace ParallelWorld
                 return;
             }
 
-            _moveAction = inputActions.FindActionMap("Player")?.FindAction("Move");
-            _jumpAction = inputActions.FindActionMap("Player")?.FindAction("Jump");
+            var playerMap = inputActions.FindActionMap("Player");
+            _moveAction = playerMap?.FindAction("Move");
+            _jumpAction = playerMap?.FindAction("Jump");
+            _togglePlayerAction = playerMap?.FindAction("TogglePlayer");
 
             if (_moveAction == null || _jumpAction == null)
                 Debug.LogWarning("[InputAdapter] 未找到 Player 动作映射中的 Move/Jump");
 
             _moveAction?.Enable();
             _jumpAction?.Enable();
+            _togglePlayerAction?.Enable();
         }
 
         private void OnDestroy()
         {
             _moveAction?.Disable();
             _jumpAction?.Disable();
+            _togglePlayerAction?.Disable();
         }
 
         /// <summary>
@@ -61,6 +66,15 @@ namespace ParallelWorld
         {
             if (_jumpAction == null) return false;
             return _jumpAction.WasPressedThisFrame();
+        }
+
+        /// <summary>
+        /// 本帧是否按下切换躯体键（X）
+        /// </summary>
+        public bool GetTogglePlayerPressed()
+        {
+            if (_togglePlayerAction == null) return false;
+            return _togglePlayerAction.WasPressedThisFrame();
         }
     }
 }

@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2334878942531841443}
   - component: {fileID: 7426401685313584254}
-  - component: {fileID: 8485985554980628104}
   - component: {fileID: 6136004696348911764}
   - component: {fileID: 4406191986572284494}
+  - component: {fileID: 8800997700112233445}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -86,36 +86,23 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 90369d03-3de7-4956-8264-c9cbca10bcf8
     m_ActionName: 'Player/TogglePlayer[/Keyboard/x]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 70215f84-33c5-485a-8a37-7af5145b6c28
+    m_ActionName: 'Light/MousePosition[/Mouse/position]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 4000ead1-9f90-4972-af27-d940e875bafe
+    m_ActionName: 'Light/MouseScroll[/Mouse/scroll]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5e792580-0578-4641-a154-dd156d46a6d3
+    m_ActionName: 'Light/ToggleLight[/Keyboard/x]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!143 &8485985554980628104
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1877677182592914973}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6136004696348911764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,6 +130,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputAdapter: {fileID: 6136004696348911764}
   config: {fileID: 11400000, guid: a9f80879c6ad9274e8152f1b9f7ed607, type: 2}
+  realPlayer: {fileID: 611193566670651127}
+  shadowPlayer: {fileID: 3556733782537079981}
+  shadowZOffset: 10
   spriteRenderers:
   - {fileID: 4292103551662788604}
   - {fileID: 4987462876416056750}
@@ -150,6 +140,22 @@ MonoBehaviour:
   animators:
   - {fileID: 5594320945766931417}
   - {fileID: 5572175243346599987}
+--- !u!114 &8800997700112233445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1877677182592914973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3f4a5b6c7d8090123456789abcdef01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  realPlayer: {fileID: 611193566670651127}
+  shadowPlayer: {fileID: 3556733782537079981}
+  inputAdapter: {fileID: 6136004696348911764}
+  defaultForm: 0
 --- !u!1001 &5567303116970544687
 PrefabInstance:
   m_ObjectHideFlags: 0

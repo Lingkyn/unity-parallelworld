@@ -37,6 +37,8 @@ namespace ParallelWorld
         private readonly List<GameObject> _inLight = new List<GameObject>();
         private string[] _lastInRangeNames = System.Array.Empty<string>();
         private bool _initialized;
+        private Ray _lastRay;
+        private bool _lastRayValid;
 
         private Transform Target => _target != null ? _target : transform;
 
@@ -101,7 +103,11 @@ namespace ParallelWorld
 
         private void Update()
         {
-            if (lightInputAdapter == null || cam == null) return;
+            if (lightInputAdapter == null || cam == null)
+            {
+                _lastRayValid = false;
+                return;
+            }
 
             // 切换
             if (lightInputAdapter.GetTogglePressed())
@@ -121,13 +127,19 @@ namespace ParallelWorld
                 return;
             }
 
-            if (!_apertureCore.IsActive) return;
+            if (!_apertureCore.IsActive)
+            {
+                _lastRayValid = false;
+                return;
+            }
 
             // 跟随鼠标：射线与固定距离平面求交
             float distance = config != null ? config.planeDistance : 10f;
             var plane = new Plane(cam.transform.forward, cam.transform.position + cam.transform.forward * distance);
 
             Ray ray = cam.ScreenPointToRay(lightInputAdapter.GetMousePosition());
+            _lastRay = ray;
+            _lastRayValid = true;
             if (plane.Raycast(ray, out float enter))
             {
                 Target.position = ray.GetPoint(enter);
@@ -224,6 +236,35 @@ namespace ParallelWorld
         private void OnDisable()
         {
             RestoreAll();
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!Application.isPlaying || _apertureCore == null || !_apertureCore.IsActive) return;
+            if (!Target.gameObject.activeInHierarchy) return;
+
+            Vector3 center = Target.position;
+            float radius = _apertureCore.Scale * 0.5f;
+            RangeDetector.GetApertureBounds(center, radius, out float minX, out float maxX, out float minY, out float maxY);
+
+            float z = center.z;
+            var bl = new Vector3(minX, minY, z);
+            var br = new Vector3(maxX, minY, z);
+            var tr = new Vector3(maxX, maxY, z);
+            var tl = new Vector3(minX, maxY, z);
+
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(bl, br);
+            Gizmos.DrawLine(br, tr);
+            Gizmos.DrawLine(tr, tl);
+            Gizmos.DrawLine(tl, bl);
+
+            if (_lastRayValid && cam != null)
+            {
+                Gizmos.color = Color.cyan;
+                float rayLength = 100f;
+                Gizmos.DrawLine(_lastRay.origin, _lastRay.origin + _lastRay.direction * rayLength);
+            }
         }
     }
 }
