@@ -34,25 +34,15 @@ namespace ParallelWorld
         private float _baseLightY;
 
         private Transform _target;
-        private readonly List<GameObject> _inLight = new List<GameObject>();
+        private readonly HashSet<GameObject> _inLight = new HashSet<GameObject>();
+        private readonly HashSet<GameObject> _inRangeSet = new HashSet<GameObject>();
         private string[] _lastInRangeNames = System.Array.Empty<string>();
         private bool _initialized;
         private Ray _lastRay;
         private bool _lastRayValid;
 
         private Transform Target => _target != null ? _target : transform;
-
-        private static void SetMeshRenderersEnabled(GameObject go, bool enabled)
-        {
-            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>(true))
-                mr.enabled = enabled;
-        }
-
-        private static void SetCollidersEnabled(GameObject go, bool enabled)
-        {
-            foreach (var col in go.GetComponentsInChildren<Collider>(true))
-                col.enabled = enabled;
-        }
+        private readonly List<GameObject> _toRemove = new List<GameObject>();
 
         private static bool SetChanged(string[] prev, IReadOnlyList<GameObject> curr, out string[] names)
         {
@@ -182,8 +172,8 @@ namespace ParallelWorld
                 foreach (var go in _cache.All)
                 {
                     if (go == null) continue;
-                    SetMeshRenderersEnabled(go, false);
-                    SetCollidersEnabled(go, false);
+                    _cache.SetMeshRenderersEnabled(go, false);
+                    _cache.SetCollidersEnabled(go, false);
                 }
             }
 
@@ -191,43 +181,47 @@ namespace ParallelWorld
             float radius = _apertureCore.Scale * 0.5f;
             RangeDetector.GetApertureBounds(center, radius, out float minX, out float maxX, out float minY, out float maxY);
 
-            var inRange = _cache.GetInBounds(minX, maxX, minY, maxY);
+            var inRange = _cache.GetInBounds(minX, maxX, minY, maxY, _inRangeSet);
 
+#if UNITY_EDITOR
             if (debugLog && SetChanged(_lastInRangeNames, inRange, out _lastInRangeNames))
                 Debug.Log($"[Aperture] 检测变化: {string.Join(", ", _lastInRangeNames)}");
+#endif
 
             // 范围内（光照内）→ 开启 MeshRenderer 和 Collider
             foreach (var go in inRange)
             {
                 if (go == null || go == Target.gameObject) continue;
-                SetMeshRenderersEnabled(go, true);
-                SetCollidersEnabled(go, true);
-                if (!_inLight.Contains(go))
-                    _inLight.Add(go);
+                _cache.SetMeshRenderersEnabled(go, true);
+                _cache.SetCollidersEnabled(go, true);
+                _inLight.Add(go);
             }
 
             // 光照内的对象：XY 超出范围则关闭 MeshRenderer 和 Collider
-            for (int i = _inLight.Count - 1; i >= 0; i--)
+            _toRemove.Clear();
+            foreach (var go in _inLight)
             {
-                var go = _inLight[i];
-                if (go == null) { _inLight.RemoveAt(i); continue; }
-                if (!inRange.Contains(go))
+                if (go == null) { _toRemove.Add(go); continue; }
+                if (!_inRangeSet.Contains(go))
                 {
-                    SetMeshRenderersEnabled(go, false);
-                    SetCollidersEnabled(go, false);
-                    _inLight.RemoveAt(i);
+                    _cache.SetMeshRenderersEnabled(go, false);
+                    _cache.SetCollidersEnabled(go, false);
+                    _toRemove.Add(go);
                 }
             }
+            foreach (var go in _toRemove)
+                _inLight.Remove(go);
         }
 
         private void RestoreAll()
         {
+            if (_cache == null) return;
             foreach (var go in _inLight)
             {
                 if (go != null)
                 {
-                    SetMeshRenderersEnabled(go, false);
-                    SetCollidersEnabled(go, false);
+                    _cache.SetMeshRenderersEnabled(go, false);
+                    _cache.SetCollidersEnabled(go, false);
                 }
             }
             _inLight.Clear();

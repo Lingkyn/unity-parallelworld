@@ -4,12 +4,20 @@ using UnityEngine;
 namespace ParallelWorld
 {
     /// <summary>
-    /// ApertureAffected 层对象缓存：初始化时收集一次，避免每帧 FindObjectsByType
+    /// ApertureAffected 层对象缓存：初始化时收集一次，避免每帧 FindObjectsByType。
+    /// 同时缓存每个对象的 MeshRenderer/Collider 数组，避免每帧 GetComponentsInChildren。
     /// </summary>
     public class ApertureAffectedCache
     {
         private readonly List<GameObject> _objects = new List<GameObject>();
         private readonly List<GameObject> _result = new List<GameObject>();
+        private readonly Dictionary<GameObject, CachedComponents> _componentCache = new Dictionary<GameObject, CachedComponents>();
+
+        private struct CachedComponents
+        {
+            public MeshRenderer[] MeshRenderers;
+            public Collider[] Colliders;
+        }
 
         /// <summary>
         /// 缓存的对象数量
@@ -22,12 +30,14 @@ namespace ParallelWorld
         public IReadOnlyList<GameObject> All => _objects;
 
         /// <summary>
-        /// 构建缓存：从场景中收集指定 Layer 上所有带 Collider 的 GameObject（去重）
+        /// 构建缓存：从场景中收集指定 Layer 上所有带 Collider 的 GameObject（去重），
+        /// 并预缓存每个对象的 MeshRenderer[] 和 Collider[]
         /// 应在 Awake/Start 调用一次
         /// </summary>
         public void Build(LayerMask layerMask)
         {
             _objects.Clear();
+            _componentCache.Clear();
             var seen = new HashSet<GameObject>();
 
             var colliders = Object.FindObjectsByType<Collider>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -38,24 +48,59 @@ namespace ParallelWorld
                 if (seen.Contains(c.gameObject)) continue;
 
                 seen.Add(c.gameObject);
-                _objects.Add(c.gameObject);
+                var go = c.gameObject;
+                _objects.Add(go);
+                _componentCache[go] = new CachedComponents
+                {
+                    MeshRenderers = go.GetComponentsInChildren<MeshRenderer>(true),
+                    Colliders = go.GetComponentsInChildren<Collider>(true)
+                };
             }
         }
 
         /// <summary>
-        /// 从缓存中筛选 XY 在范围内的对象，复用内部 List 减少分配
+        /// 从缓存中筛选 XY 在范围内的对象，复用内部 List 减少分配。
+        /// 若传入 setToFill 则同时填充，用于 O(1) 的 Contains 查询。
         /// </summary>
-        public List<GameObject> GetInBounds(float minX, float maxX, float minY, float maxY)
+        public List<GameObject> GetInBounds(float minX, float maxX, float minY, float maxY, HashSet<GameObject> setToFill = null)
         {
             _result.Clear();
+            setToFill?.Clear();
             foreach (var go in _objects)
             {
                 if (go == null) continue;
                 Vector3 p = go.transform.position;
                 if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY)
+                {
                     _result.Add(go);
+                    setToFill?.Add(go);
+                }
             }
             return _result;
+        }
+
+        /// <summary>
+        /// 使用缓存的 MeshRenderer 设置 enabled，避免每帧 GetComponentsInChildren
+        /// </summary>
+        public void SetMeshRenderersEnabled(GameObject go, bool enabled)
+        {
+            if (go == null || !_componentCache.TryGetValue(go, out var cached)) return;
+            foreach (var mr in cached.MeshRenderers)
+            {
+                if (mr != null) mr.enabled = enabled;
+            }
+        }
+
+        /// <summary>
+        /// 使用缓存的 Collider 设置 enabled，避免每帧 GetComponentsInChildren
+        /// </summary>
+        public void SetCollidersEnabled(GameObject go, bool enabled)
+        {
+            if (go == null || !_componentCache.TryGetValue(go, out var cached)) return;
+            foreach (var col in cached.Colliders)
+            {
+                if (col != null) col.enabled = enabled;
+            }
         }
     }
 }
