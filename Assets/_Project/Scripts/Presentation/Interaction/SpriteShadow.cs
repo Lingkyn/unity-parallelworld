@@ -21,7 +21,7 @@ public class SpriteShadow : MonoBehaviour
     // cached refs
     private SpriteRenderer sr;
     private Mesh shadowMesh;
-    private BoxCollider shadowCollider; // no BVH rebuild
+    private BoxCollider shadowCollider; // lazy created
     private Light _lightComp;
 
     // no-GC buffers
@@ -30,6 +30,9 @@ public class SpriteShadow : MonoBehaviour
 
     // frame counter
     private int _frameCount = 0;
+
+    // dirty check
+    private Bounds _lastBounds;
 
     // set once
     private static readonly int[] _triangles = new int[]
@@ -60,10 +63,6 @@ public class SpriteShadow : MonoBehaviour
         shadowMesh.vertices  = _verts;
         shadowMesh.triangles = _triangles;
 
-        // BoxCollider
-        shadowCollider = shadowObject.gameObject.AddComponent<BoxCollider>();
-        shadowCollider.isTrigger = false;
-
         // MeshFilter
         MeshFilter mf = shadowObject.GetComponent<MeshFilter>();
         if (!mf) mf = shadowObject.gameObject.AddComponent<MeshFilter>();
@@ -80,6 +79,9 @@ public class SpriteShadow : MonoBehaviour
                 color = new Color(0, 0, 0, 0.5f)
             };
         }
+
+        // hide shadow until light is on
+        shadowObject.gameObject.SetActive(false);
     }
 
     void LateUpdate()
@@ -89,10 +91,13 @@ public class SpriteShadow : MonoBehaviour
         bool lit = IsLitBySpotLight();
         shadowObject.gameObject.SetActive(lit);
 
-        if (shadowCollider != null)
-            shadowCollider.enabled = lit;
-
         if (!lit) return;
+
+        // lazy create collider on first lit
+        if (shadowCollider == null)
+            CreateCollider();
+
+        shadowCollider.enabled = true;
 
         // throttled mesh
         if (_frameCount % meshUpdateInterval == 0)
@@ -101,6 +106,13 @@ public class SpriteShadow : MonoBehaviour
         // throttled collider
         if (_frameCount % colliderUpdateInterval == 0)
             UpdateBoxCollider();
+    }
+
+    // create collider only when first needed
+    void CreateCollider()
+    {
+        shadowCollider = shadowObject.gameObject.AddComponent<BoxCollider>();
+        shadowCollider.isTrigger = false;
     }
 
     void UpdateShadow()
@@ -124,10 +136,12 @@ public class SpriteShadow : MonoBehaviour
         // no normals needed
     }
 
-    // fit box to mesh bounds
+    // fit box to mesh bounds, skip if unchanged
     void UpdateBoxCollider()
     {
         Bounds b = shadowMesh.bounds;
+        if (b == _lastBounds) return; // dirty check
+        _lastBounds = b;
         shadowCollider.center = b.center;
         shadowCollider.size   = b.size;
     }
@@ -160,8 +174,8 @@ public class SpriteShadow : MonoBehaviour
     bool IsLitBySpotLight()
     {
         // cached ref
-        if (_lightComp == null || _lightComp.type != LightType.Spot)
-            return true;
+        if (_lightComp == null || _lightComp.type != LightType.Spot || !_lightComp.enabled)
+            return false;
 
         float dist = Vector3.Distance(transform.position, lightTransform.position);
         if (dist > _lightComp.range)

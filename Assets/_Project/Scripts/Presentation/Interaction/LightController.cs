@@ -4,7 +4,7 @@ public class LightController : MonoBehaviour
 {
     [Header("References")]
     public Camera mainCamera;
-    public GameObject spotLightObject; // ⭐ 用 SetActive 控制这个
+    public GameObject spotLightObject; 
 
     [Header("Position Lock")]
     public float fixedZ = -18f;
@@ -17,7 +17,7 @@ public class LightController : MonoBehaviour
 
     void Start()
     {
-        // 默认关闭灯
+        
         if (spotLightObject)
             spotLightObject.SetActive(false);
     }
@@ -26,14 +26,14 @@ public class LightController : MonoBehaviour
     {
         if (!mainCamera || !spotLightObject) return;
 
-        // ⭐ 按 X 切换
+        
         if (Input.GetKeyDown(KeyCode.X))
         {
             isLightOn = !isLightOn;
             spotLightObject.SetActive(isLightOn);
         }
 
-        // ⭐⭐⭐ 位置始终更新（关键）⭐⭐⭐
+        
 
         Vector3 mouse = Input.mousePosition;
 
@@ -47,10 +47,10 @@ public class LightController : MonoBehaviour
 
         float clampedY = Mathf.Max(worldPos.y, minY);
 
-        // 移动控制器（父物体）
+        
         transform.position = new Vector3(worldPos.x, clampedY, fixedZ);
 
-        // 聚焦点锁在 y = focusY
+        
         Vector3 focusPoint = new Vector3(worldPos.x, focusY, 0f);
         transform.LookAt(focusPoint);
     }
