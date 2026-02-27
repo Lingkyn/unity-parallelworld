@@ -1,3 +1,4 @@
+using ParallelWorld;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,6 +31,18 @@ namespace ParallelWorld.Editor
             if (TryCreateConfig<ApertureConfig>("ApertureConfig.asset", out bool createdAperture))
             {
                 if (createdAperture) created++; else skipped++;
+            }
+
+            // InteractionConfig
+            if (TryCreateConfig<InteractionConfig>("InteractionConfig.asset", out bool createdInteraction))
+            {
+                if (createdInteraction) created++; else skipped++;
+            }
+
+            // InteractableDatabase
+            if (TryCreateConfig<InteractableDatabase>("InteractableDatabase.asset", out bool createdDb))
+            {
+                if (createdDb) created++; else skipped++;
             }
 
             AssetDatabase.SaveAssets();

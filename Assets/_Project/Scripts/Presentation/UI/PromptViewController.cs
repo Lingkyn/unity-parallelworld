@@ -1,0 +1,83 @@
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace ParallelWorld
+{
+    /// <summary>
+    /// 单实例 Floating Prompt 控制器
+    /// 使用 UIDocument 加载 Prompt.uxml，根据世界坐标定位 Label
+    /// </summary>
+    [RequireComponent(typeof(UIDocument))]
+    public class PromptViewController : MonoBehaviour
+    {
+        [SerializeField] private UIDocument _uiDocument;
+        [SerializeField] private Camera _camera;
+        [SerializeField, Tooltip("提示框中心相对屏幕坐标的偏移（像素）")]
+        private Vector2 _screenOffset = new Vector2(0, 20);
+
+        private Label _promptLabel;
+        private VisualElement _root;
+
+        private void Awake()
+        {
+            if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
+            if (_camera == null) _camera = Camera.main;
+
+            if (_uiDocument != null)
+            {
+                _root = _uiDocument.rootVisualElement;
+                _promptLabel = _root?.Q<Label>("Prompt");
+            }
+
+            if (_promptLabel == null)
+                Debug.LogWarning("[PromptViewController] 未找到名为 'Prompt' 的 Label，请检查 UIDocument 是否加载 Prompt.uxml");
+        }
+
+        /// <summary>
+        /// 显示提示
+        /// </summary>
+        public void Show()
+        {
+            if (_root != null)
+                _root.style.display = DisplayStyle.Flex;
+        }
+
+        /// <summary>
+        /// 隐藏提示
+        /// </summary>
+        public void Hide()
+        {
+            if (_root != null)
+                _root.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>
+        /// 设置提示文本
+        /// </summary>
+        public void SetText(string text)
+        {
+            if (_promptLabel != null)
+                _promptLabel.text = text ?? "";
+        }
+
+        /// <summary>
+        /// 根据世界坐标设置 UI 位置（World-to-Screen）
+        /// </summary>
+        public void SetPosition(Vector3 worldPosition, Vector3 worldOffset)
+        {
+            if (_camera == null || _root == null) return;
+
+            Vector3 target = worldPosition + worldOffset;
+            Vector2 screenPos = _camera.WorldToScreenPoint(target);
+            screenPos += _screenOffset;
+
+            // UI Toolkit: top 为距离父元素顶部的距离；Screen 坐标 Y 向上
+            float topPx = Screen.height - screenPos.y;
+            _root.style.left = screenPos.x;
+            _root.style.top = topPx;
+            _root.style.right = StyleKeyword.Auto;
+            _root.style.bottom = StyleKeyword.Auto;
+            _root.style.position = Position.Absolute;
+        }
+    }
+}
