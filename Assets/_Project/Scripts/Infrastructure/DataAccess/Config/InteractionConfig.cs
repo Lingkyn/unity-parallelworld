@@ -1,0 +1,27 @@
+using UnityEngine;
+
+namespace ParallelWorld
+{
+    /// <summary>
+    /// 交互系统的可配置参数（Proximity Prompt）
+    /// </summary>
+    [CreateAssetMenu(fileName = "InteractionConfig", menuName = "ParallelWorld/Interaction Config")]
+    public class InteractionConfig : ScriptableObject
+    {
+        [Header("检测")]
+        [Tooltip("可交互物的 Tag（需在 Project Settings 中创建）")]
+        public string interactableTag = "Interactable";
+
+        [Header("提示位置")]
+        [Tooltip("提示框相对对象头顶的世界坐标偏移")]
+        public Vector3 promptOffset = new Vector3(0f, 1f, 0f);
+
+        [Header("默认文本")]
+        [Tooltip("无 IInteractable 时的兜底提示文本")]
+        public string defaultPromptText = "按 E 交互";
+
+        [Header("数据表")]
+        [Tooltip("可交互物提示文本表，多处同类型可共享 entryId")]
+        public InteractableDatabase database;
+    }
+}
