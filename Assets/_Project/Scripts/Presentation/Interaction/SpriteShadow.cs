@@ -174,7 +174,7 @@ public class SpriteShadow : MonoBehaviour
     bool IsLitBySpotLight()
     {
         // cached ref
-        if (_lightComp == null || _lightComp.type != LightType.Spot || !_lightComp.enabled)
+        if (_lightComp == null || _lightComp.type != LightType.Spot || !lightTransform.gameObject.activeInHierarchy)
             return false;
 
         float dist = Vector3.Distance(transform.position, lightTransform.position);
