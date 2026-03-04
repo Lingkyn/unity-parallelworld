@@ -13,6 +13,8 @@ public class LightController : MonoBehaviour
     [Header("Focus Lock")]
     public float focusY = 3f;
 
+    public static System.Action<bool> OnLightToggle;
+
     private bool isLightOn = false;
 
     void Start()
@@ -31,6 +33,8 @@ public class LightController : MonoBehaviour
         {
             isLightOn = !isLightOn;
             spotLightObject.SetActive(isLightOn);
+            
+            OnLightToggle?.Invoke(isLightOn);
         }
 
         
