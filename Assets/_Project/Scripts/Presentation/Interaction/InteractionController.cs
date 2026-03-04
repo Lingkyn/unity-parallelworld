@@ -1,53 +1,85 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ParallelWorld
 {
     /// <summary>
-    /// 交互系统控制器：整合 TriggerDetector、InteractableCache、PromptViewController
-    /// 挂于 GameplaySetup 或与 Player 同层
+    /// 交互系统控制器：整合 TriggerDetector、PromptViewController、InteractButtonViewController
+    /// 按 Tag 分支：InteractableButton 显示按钮，点击播放动画；其他显示文本
+    /// 多按钮时按距离+表序选最近；播放中锁定玩家
     /// </summary>
     public class InteractionController : MonoBehaviour
     {
         [Header("引用")]
         [SerializeField] private TriggerDetector _triggerDetector;
         [SerializeField] private PromptViewController _promptViewController;
+        [SerializeField] private InteractButtonViewController _interactButtonViewController;
         [SerializeField] private InteractionConfig _config;
+
+        /// <summary>供 InteractableButtonData 等在 Start 时解析表配置使用</summary>
+        public InteractionConfig Config => _config;
         [SerializeField] private Camera _camera;
         [SerializeField, Tooltip("调试日志")]
         private bool _debugLog;
 
-        private InteractionCore _core;
-        private InteractableCache _cache;
+        private readonly HashSet<GameObject> _inRange = new HashSet<GameObject>();
+        private MovementController _movementController;
+        private bool _didFirstFrameHide;
+        private Coroutine _unlockCoroutine;
 
         private void Awake()
         {
-            _core = new InteractionCore();
-            _cache = new InteractableCache();
-
             if (_camera == null) _camera = Camera.main;
-            if (_triggerDetector == null) _triggerDetector = FindAnyObjectByType<TriggerDetector>();
-            if (_promptViewController == null) _promptViewController = FindAnyObjectByType<PromptViewController>();
+            if (_triggerDetector == null)
+                Debug.LogWarning("[InteractionController] 未指定 Trigger Detector：在挂有本组件的物体 Inspector 中，将玩家子物体 InteractionDetector 上的 TriggerDetector 拖入对应字段");
+            else
+            {
+                var player = _triggerDetector.transform.parent;
+                if (player != null)
+                    _movementController = player.GetComponent<MovementController>();
+            }
+            if (_movementController == null && _triggerDetector != null)
+                _movementController = _triggerDetector.GetComponentInParent<MovementController>();
+            if (_promptViewController == null)
+                Debug.LogWarning("[InteractionController] 未指定 Prompt View Controller：将挂有 PromptViewController 的物体（如 PromptUI）拖入本组件的 Prompt View Controller 字段");
+            if (_interactButtonViewController == null && _debugLog)
+                Debug.Log("[InteractionController] 未指定 Interact Button View Controller：按钮型交互将不可用；若有 PromptButton 物体可拖入对应字段");
 
             if (_config != null && _triggerDetector != null)
-                _triggerDetector.SetInteractableTag(_config.interactableTag);
+                _triggerDetector.SetInteractableFilter(_config.interactableLayer);
         }
 
         private void Start()
         {
-            string tag = _config != null ? _config.interactableTag : "Interactable";
-            _cache.Build(tag);
-
             if (_triggerDetector != null)
             {
                 _triggerDetector.OnInteractableEnter += OnInteractableEnter;
                 _triggerDetector.OnInteractableExit += OnInteractableExit;
             }
 
-            if (_promptViewController != null)
-                _promptViewController.Hide();
+            if (_interactButtonViewController != null)
+                _interactButtonViewController.OnClicked += OnInteractButtonClicked;
+
+            foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                vc.Hide();
+            foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                vc.Hide();
 
             if (_debugLog)
-                Debug.Log($"[InteractionController] 就绪: detector={_triggerDetector != null}, prompt={_promptViewController != null}, tag={tag}");
+                Debug.Log($"[InteractionController] 就绪: detector={_triggerDetector != null}, prompt={_promptViewController != null}, button={_interactButtonViewController != null}");
+        }
+
+        private void Update()
+        {
+            if (!_didFirstFrameHide && Time.frameCount >= 2 && _inRange.Count == 0)
+            {
+                _didFirstFrameHide = true;
+                foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    vc.Hide();
+                foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    vc.Hide();
+            }
         }
 
         private void OnDestroy()
@@ -57,37 +89,164 @@ namespace ParallelWorld
                 _triggerDetector.OnInteractableEnter -= OnInteractableEnter;
                 _triggerDetector.OnInteractableExit -= OnInteractableExit;
             }
+            if (_interactButtonViewController != null)
+                _interactButtonViewController.OnClicked -= OnInteractButtonClicked;
         }
 
         private void OnInteractableEnter(GameObject other)
         {
-            _core.SetCurrent(other);
-            _core.ShowPrompt();
-
-            string text = InteractableData.ResolvePromptText(other, _config);
-            Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
-
-            if (_promptViewController != null)
-            {
-                _promptViewController.SetText(text);
-                _promptViewController.SetPosition(other.transform.position, offset);
-                _promptViewController.Show();
-            }
-
-            if (_debugLog)
-                Debug.Log($"[Interaction] Enter: {other.name}, text={text}");
+            _inRange.Add(other);
+            RefreshCurrentTarget();
         }
 
         private void OnInteractableExit(GameObject other)
         {
-            if (_core.CurrentInteractable != other) return;
+            _inRange.Remove(other);
+            RefreshCurrentTarget();
+        }
 
-            _core.HidePrompt();
-            if (_promptViewController != null)
-                _promptViewController.Hide();
+        /// <summary>
+        /// 从范围内选出最佳可交互物：按钮型按距离+表序，文本型取第一个；同时支持文本+按钮
+        /// </summary>
+        private void RefreshCurrentTarget()
+        {
+            if (_inRange.Count == 0)
+            {
+                foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    vc.Hide();
+                foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    vc.Hide();
+                return;
+            }
+
+            Vector3 triggerPos = _triggerDetector != null ? _triggerDetector.transform.position : Vector3.zero;
+            var db = _config?.buttonDatabase;
+
+            // 分离按钮型与文本型
+            GameObject bestButton = null;
+            float bestButtonDist = float.MaxValue;
+            int bestButtonPriority = int.MaxValue;
+
+            GameObject bestText = null;
+
+            foreach (var go in _inRange)
+            {
+                if (go == null) continue;
+
+                if (go.CompareTag(Tags.InteractableButton))
+                {
+                    var b = go.GetComponent<InteractableButtonData>();
+                    if (b == null || !b.HasAnimation(db) || b.IsAnimationFinished()) continue;
+
+                    float dist = Vector3.Distance(triggerPos, go.transform.position);
+                    int prio = b.GetPriority(db);
+                    // 同距离：表模式按表序，Local 模式按 GetInstanceID 稳定排序
+                    int bestId = bestButton != null ? bestButton.GetInstanceID() : 0;
+                    bool isBetter = dist < bestButtonDist
+                        || (Mathf.Approximately(dist, bestButtonDist) && (prio < bestButtonPriority || (prio == bestButtonPriority && go.GetInstanceID() < bestId)));
+                    if (isBetter)
+                    {
+                        bestButtonDist = dist;
+                        bestButtonPriority = prio;
+                        bestButton = go;
+                    }
+                }
+                else if (bestText == null)
+                {
+                    bestText = go;
+                }
+            }
+
+            // 显示按钮型
+            if (bestButton != null)
+            {
+                if (_interactButtonViewController == null && _debugLog)
+                    Debug.Log("[Interaction] bestButton found but _interactButtonViewController=null");
+                _promptViewController?.Hide();
+
+                var buttonData = bestButton.GetComponent<InteractableButtonData>();
+                Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
+
+                _interactButtonViewController?.SetButtonText(buttonData.ResolveButtonText(db));
+                _interactButtonViewController?.SetPosition(bestButton.transform.position, offset);
+                _interactButtonViewController?.Show(bestButton);
+
+                // 同一物体既有文本又有按钮：文本在上
+                var textData = bestButton.GetComponent<InteractableData>();
+                if (textData != null && _promptViewController != null)
+                {
+                    string text = InteractableData.ResolvePromptText(bestButton, _config);
+                    _promptViewController.SetText(text);
+                    _promptViewController.SetPosition(bestButton.transform.position, offset + new Vector3(0, 0.3f, 0));
+                    _promptViewController.Show();
+                }
+
+                if (_debugLog)
+                    Debug.Log($"[Interaction] 显示按钮: {bestButton.name}");
+            }
+            else if (bestText != null)
+            {
+                _interactButtonViewController?.Hide();
+
+                string text = InteractableData.ResolvePromptText(bestText, _config);
+                Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
+                _promptViewController?.SetText(text);
+                _promptViewController?.SetPosition(bestText.transform.position, offset);
+                _promptViewController?.Show();
+
+                if (_debugLog)
+                    Debug.Log($"[Interaction] 显示文本: {bestText.name}, text={text}");
+            }
+            else
+            {
+                _promptViewController?.Hide();
+                _interactButtonViewController?.Hide();
+            }
+        }
+
+        private void OnInteractButtonClicked(GameObject target)
+        {
+            if (target == null) return;
+
+            var buttonData = target.GetComponent<InteractableButtonData>();
+            if (buttonData == null || !buttonData.HasAnimation(_config?.buttonDatabase)) return;
+
+            // 点击后立即隐藏按钮
+            _interactButtonViewController?.Hide();
+            _promptViewController?.Hide();
+
+            buttonData.PlayAnimation(_config?.buttonDatabase);
+
+            // 播放中锁定玩家
+            LockPlayer();
+            var clip = buttonData.ResolveAnimationClip(_config?.buttonDatabase);
+            float duration = clip != null ? clip.length : 1f;
+            if (_unlockCoroutine != null)
+                StopCoroutine(_unlockCoroutine);
+            _unlockCoroutine = StartCoroutine(UnlockAfterDelay(duration));
 
             if (_debugLog)
-                Debug.Log($"[Interaction] Exit: {other.name}");
+                Debug.Log($"[Interaction] Button clicked: {target.name}, 播放动画 {duration}s");
+        }
+
+        private void LockPlayer()
+        {
+            if (_movementController != null)
+                _movementController.enabled = false;
+        }
+
+        private void UnlockPlayer()
+        {
+            if (_movementController != null)
+                _movementController.enabled = true;
+        }
+
+        private IEnumerator UnlockAfterDelay(float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            UnlockPlayer();
+            _unlockCoroutine = null;
+            RefreshCurrentTarget();
         }
     }
 }

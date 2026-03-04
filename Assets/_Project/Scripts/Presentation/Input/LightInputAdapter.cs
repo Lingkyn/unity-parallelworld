@@ -18,14 +18,7 @@ namespace ParallelWorld
         {
             if (inputActions == null)
             {
-                var playerInput = FindAnyObjectByType<UnityEngine.InputSystem.PlayerInput>();
-                if (playerInput != null)
-                    inputActions = playerInput.actions;
-            }
-
-            if (inputActions == null)
-            {
-                Debug.LogWarning("[LightInputAdapter] 未找到 InputActionAsset，请手动指定或确保场景中有 PlayerInput");
+                Debug.LogWarning("[LightInputAdapter] 请在 Inspector 中指定 Input Action Asset");
                 return;
             }
 

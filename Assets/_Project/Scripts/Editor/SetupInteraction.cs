@@ -43,6 +43,13 @@ namespace ParallelWorld.Editor
                 if (config == null) config = AssetDatabase.LoadAssetAtPath<InteractionConfig>("Assets/_Project/Data/InteractionConfig.asset");
                 if (database == null) database = AssetDatabase.LoadAssetAtPath<InteractableDatabase>("Assets/_Project/Data/InteractableDatabase.asset");
             }
+            var buttonDb = AssetDatabase.LoadAssetAtPath<InteractableButtonDatabase>("Assets/_Project/Data/InteractableButtonDatabase.asset");
+            if (buttonDb == null)
+            {
+                CreateDefaultConfigs.Execute();
+                buttonDb = AssetDatabase.LoadAssetAtPath<InteractableButtonDatabase>("Assets/_Project/Data/InteractableButtonDatabase.asset");
+            }
+
             if (config != null && database != null && config.database == null)
             {
                 var configSo = new SerializedObject(config);
@@ -50,6 +57,18 @@ namespace ParallelWorld.Editor
                 configSo.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(config);
                 dirty = true;
+            }
+            if (config != null && buttonDb != null)
+            {
+                var configSo = new SerializedObject(config);
+                var prop = configSo.FindProperty("buttonDatabase");
+                if (prop != null && prop.objectReferenceValue == null)
+                {
+                    prop.objectReferenceValue = buttonDb;
+                    configSo.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(config);
+                    dirty = true;
+                }
             }
 
             // 2. 创建或查找 PromptUI（UIDocument + PromptViewController）
@@ -95,6 +114,27 @@ namespace ParallelWorld.Editor
                 dirty = true;
             }
 
+            // 2b. 按钮型交互：使用场景中的 PromptButton（已挂 Button.uxml），不新建 InteractButtonUI
+            InteractButtonViewController buttonVC = Object.FindAnyObjectByType<InteractButtonViewController>(FindObjectsInactive.Include);
+            if (buttonVC == null)
+            {
+                var promptButton = GameObject.Find("PromptButton");
+                if (promptButton != null)
+                {
+                    var doc = promptButton.GetComponent<UIDocument>();
+                    if (doc != null)
+                    {
+                        buttonVC = promptButton.GetComponent<InteractButtonViewController>();
+                        if (buttonVC == null)
+                        {
+                            buttonVC = promptButton.AddComponent<InteractButtonViewController>();
+                            dirty = true;
+                        }
+                        // 不覆盖已有 visualTreeAsset，用户已配置 Button.uxml
+                    }
+                }
+            }
+
             // 3. 创建 Player 的 Trigger 检测体子物体
             var detector = player.transform.Find("InteractionDetector");
             if (detector == null)
@@ -110,7 +150,7 @@ namespace ParallelWorld.Editor
 
                 var triggerDet = go.AddComponent<TriggerDetector>();
                 if (config != null)
-                    triggerDet.SetInteractableTag(config.interactableTag);
+                    triggerDet.SetInteractableFilter(config.interactableLayer);
                 dirty = true;
             }
             else if (detector.GetComponent<TriggerDetector>() == null)
@@ -127,7 +167,7 @@ namespace ParallelWorld.Editor
 
                 var triggerDet = detector.gameObject.AddComponent<TriggerDetector>();
                 if (config != null)
-                    triggerDet.SetInteractableTag(config.interactableTag);
+                    triggerDet.SetInteractableFilter(config.interactableLayer);
                 dirty = true;
             }
 
@@ -144,6 +184,7 @@ namespace ParallelWorld.Editor
             var so = new SerializedObject(interactionCtrl);
             so.FindProperty("_triggerDetector").objectReferenceValue = triggerDetector;
             so.FindProperty("_promptViewController").objectReferenceValue = promptVC;
+            so.FindProperty("_interactButtonViewController").objectReferenceValue = buttonVC;
             so.FindProperty("_config").objectReferenceValue = config;
             so.FindProperty("_camera").objectReferenceValue = Camera.main;
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -158,7 +199,7 @@ namespace ParallelWorld.Editor
                 Debug.Log("[SetupInteraction] 交互系统已就绪，已更新引用");
             }
 
-            Debug.Log("[SetupInteraction] 提示：1) Project Settings -> Tags 添加 'Interactable'；2) 可交互物体添加 Tag、Collider、InteractableData；3) 多处共享提示时用 Table 模式 + InteractableDatabase 填写 entryId");
+            Debug.Log("[SetupInteraction] 提示：1) 可交互物：Tag(InteractableButton/InteractableText)、Layer(Interactable)、Collider；2) 文本型：InteractableData；3) 按钮型：InteractableButtonData + Animator；4) Layer 在 InteractionConfig 中设置 interactableLayer");
         }
     }
 }

@@ -20,6 +20,8 @@ namespace ParallelWorld
         [SerializeField] private TextSource _source = TextSource.Local;
         [SerializeField, Tooltip("数据表模式时使用，如 bottle、door")]
         private string _entryId;
+        [SerializeField, Tooltip("表模式时可选；不填则使用 InteractionController 的 Config")]
+        private InteractionConfig _config;
         [SerializeField, Tooltip("本地模式时使用，或表查找失败时的兜底")]
         private string _promptText = "按 E 交互";
 
@@ -35,12 +37,13 @@ namespace ParallelWorld
             var data = go.GetComponent<InteractableData>();
             if (data != null)
             {
-                if (data._source == TextSource.Table && config?.database != null && !string.IsNullOrEmpty(data._entryId))
+                var effectiveConfig = data._config ?? config;
+                if (data._source == TextSource.Table && effectiveConfig?.database != null && !string.IsNullOrEmpty(data._entryId))
                 {
-                    var fromTable = config.database.GetPromptText(data._entryId);
+                    var fromTable = effectiveConfig.database.GetPromptText(data._entryId);
                     if (!string.IsNullOrEmpty(fromTable)) return fromTable;
                 }
-                return data._promptText ?? config?.defaultPromptText ?? "按 E 交互";
+                return data._promptText ?? effectiveConfig?.defaultPromptText ?? "按 E 交互";
             }
 
             var interactable = go.GetComponent<IInteractable>();

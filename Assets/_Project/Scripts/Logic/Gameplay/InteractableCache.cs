@@ -15,21 +15,41 @@ namespace ParallelWorld
         public IReadOnlyList<GameObject> All => _objects;
 
         /// <summary>
-        /// 按 Tag 收集场景中可交互物
+        /// 按 Tag 收集场景中可交互物（Layer 为 0 时）
         /// </summary>
         public void Build(string interactableTag)
         {
+            Build(0, string.IsNullOrEmpty(interactableTag) ? null : new[] { interactableTag });
+        }
+
+        /// <summary>
+        /// 按 Layer 或 Tag 收集。layerMask!=0 时按层；否则按 tag 列表（任一匹配）
+        /// </summary>
+        public void Build(LayerMask layerMask, string[] tags)
+        {
             _objects.Clear();
             _seen.Clear();
-
-            if (string.IsNullOrEmpty(interactableTag)) return;
 
             var colliders = Object.FindObjectsByType<Collider>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             foreach (var c in colliders)
             {
                 if (c == null || c.gameObject == null) continue;
-                if (!c.gameObject.CompareTag(interactableTag)) continue;
                 if (_seen.Contains(c.gameObject)) continue;
+
+                if (layerMask != 0)
+                {
+                    if (((1 << c.gameObject.layer) & layerMask) == 0) continue;
+                }
+                else if (tags != null && tags.Length > 0)
+                {
+                    bool match = false;
+                    foreach (var t in tags)
+                    {
+                        if (!string.IsNullOrEmpty(t) && c.gameObject.CompareTag(t)) { match = true; break; }
+                    }
+                    if (!match) continue;
+                }
+                else continue;
 
                 _seen.Add(c.gameObject);
                 _objects.Add(c.gameObject);

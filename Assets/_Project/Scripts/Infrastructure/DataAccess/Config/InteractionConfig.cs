@@ -9,8 +9,8 @@ namespace ParallelWorld
     public class InteractionConfig : ScriptableObject
     {
         [Header("检测")]
-        [Tooltip("可交互物的 Tag（需在 Project Settings 中创建）")]
-        public string interactableTag = "Interactable";
+        [Tooltip("可交互物 Layer（0 表示不按层筛选）")]
+        public LayerMask interactableLayer;
 
         [Header("提示位置")]
         [Tooltip("提示框相对对象头顶的世界坐标偏移")]
@@ -23,5 +23,7 @@ namespace ParallelWorld
         [Header("数据表")]
         [Tooltip("可交互物提示文本表，多处同类型可共享 entryId")]
         public InteractableDatabase database;
+        [Tooltip("按钮型可交互物表，同距离时按表序；表模式时提供 buttonText、animationClip")]
+        public InteractableButtonDatabase buttonDatabase;
     }
 }
