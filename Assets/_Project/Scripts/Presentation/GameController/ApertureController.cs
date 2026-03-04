@@ -69,9 +69,7 @@ namespace ParallelWorld
             if (lightInputAdapter == null)
                 lightInputAdapter = GetComponent<LightInputAdapter>();
             if (lightInputAdapter == null)
-                lightInputAdapter = FindAnyObjectByType<LightInputAdapter>();
-            if (lightInputAdapter == null)
-                Debug.LogWarning("[ApertureController] 未找到 LightInputAdapter");
+                Debug.LogWarning("[ApertureController] 请在 Inspector 中指定 Light Input Adapter");
 
             _apertureCore = new ApertureCore();
 

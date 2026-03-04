@@ -45,6 +45,12 @@ namespace ParallelWorld.Editor
                 if (createdDb) created++; else skipped++;
             }
 
+            // InteractableButtonDatabase
+            if (TryCreateConfig<InteractableButtonDatabase>("InteractableButtonDatabase.asset", out bool createdBtnDb))
+            {
+                if (createdBtnDb) created++; else skipped++;
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

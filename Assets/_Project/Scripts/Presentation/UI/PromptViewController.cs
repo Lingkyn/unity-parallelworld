@@ -20,8 +20,18 @@ namespace ParallelWorld
 
         private void Awake()
         {
-            if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
-            if (_camera == null) _camera = Camera.main;
+            if (_uiDocument == null)
+            {
+                _uiDocument = GetComponent<UIDocument>();
+                if (_uiDocument == null)
+                    Debug.LogWarning("[PromptViewController] 请在 Inspector 中指定 UIDocument");
+            }
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+                if (_camera == null)
+                    Debug.LogWarning("[PromptViewController] 请在 Inspector 中指定 Camera");
+            }
 
             if (_uiDocument != null)
             {
@@ -47,8 +57,12 @@ namespace ParallelWorld
         /// </summary>
         public void Hide()
         {
-            if (_root != null)
-                _root.style.display = DisplayStyle.None;
+            var root = _root ?? _uiDocument?.rootVisualElement;
+            if (root != null)
+            {
+                root.style.display = DisplayStyle.None;
+                if (_root == null) _root = root;
+            }
         }
 
         /// <summary>

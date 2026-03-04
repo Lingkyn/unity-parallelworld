@@ -5,7 +5,12 @@
 public static class Tags
 {
     /// <summary>
-    /// 可交互物 Tag（Proximity Prompt）
+    /// 靠近显示文本型
     /// </summary>
-    public const string Interactable = "Interactable";
+    public const string InteractableText = "InteractableText";
+
+    /// <summary>
+    /// 靠近显示按钮型，点击播放动画
+    /// </summary>
+    public const string InteractableButton = "InteractableButton";
 }
