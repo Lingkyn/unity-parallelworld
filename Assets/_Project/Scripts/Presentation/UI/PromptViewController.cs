@@ -14,10 +14,9 @@ namespace ParallelWorld
         [SerializeField] private Camera _camera;
         [SerializeField, Tooltip("提示框中心相对屏幕坐标的偏移（像素）")]
         private Vector2 _screenOffset = new Vector2(0, 20);
-        [SerializeField, Tooltip("未指定 Config 时的备用值；若 InteractionController 注入 Config 则优先用 Config.fixedPromptTopPx")]
-        private float _fallbackTopPx = 900f;
-        [SerializeField, Tooltip("UI 居中对齐时，resolvedStyle.width 为 0 时的备用宽度")]
-        private float _fallbackWidthPx = 150f;
+        [SerializeField, Tooltip("未指定 Config 时的备用视口比例 0~1；若 InteractionController 注入 Config 则优先用 Config.promptTopViewport")]
+        [Range(0f, 1f)]
+        private float _fallbackTopViewport = 0.833f;
 
         private InteractionConfig _config;
         private GameObject _currentTarget;
@@ -50,7 +49,7 @@ namespace ParallelWorld
                 Debug.LogWarning("[PromptViewController] 未找到名为 'Prompt' 的 Label，请检查 UIDocument 是否加载 Prompt.uxml");
         }
 
-        /// <summary>由 InteractionController 注入，用于读取 fixedPromptTopPx</summary>
+        /// <summary>由 InteractionController 注入，用于读取 promptTopViewport</summary>
         public void SetConfig(InteractionConfig config) => _config = config;
 
         private void LateUpdate()
@@ -104,11 +103,13 @@ namespace ParallelWorld
             Vector3 target = worldPosition + worldOffset;
             Vector2 screenPos = _camera.WorldToScreenPoint(target);
             screenPos += _screenOffset;
-            float width = _root.resolvedStyle.width > 0 ? _root.resolvedStyle.width : _fallbackWidthPx;
-            float targetLeft = screenPos.x - width * 0.5f;
 
-            _root.style.left = targetLeft;
-            _root.style.top = _config != null ? _config.fixedPromptTopPx : _fallbackTopPx;
+            // X/Y 均用视口：适配多分辨率
+            float viewportX = Screen.width > 0 ? screenPos.x / Screen.width : 0f;
+            _root.style.left = Length.Percent(viewportX * 100f);
+            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
+            float viewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
+            _root.style.top = Length.Percent(viewport * 100f);
             _root.style.right = StyleKeyword.Auto;
             _root.style.bottom = StyleKeyword.Auto;
             _root.style.position = Position.Absolute;

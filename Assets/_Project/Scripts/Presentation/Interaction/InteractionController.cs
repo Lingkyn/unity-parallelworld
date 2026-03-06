@@ -148,9 +148,9 @@ namespace ParallelWorld
             Vector3 triggerPos = _triggerDetector != null ? _triggerDetector.transform.position : Vector3.zero;
             var db = _config?.buttonDatabase;
 
-            // 分离按钮型与文本型
+            // 分离按钮型与文本型（用 sqrMagnitude 避免 sqrt 开销）
             GameObject bestButton = null;
-            float bestButtonDist = float.MaxValue;
+            float bestButtonDistSq = float.MaxValue;
             int bestButtonPriority = int.MaxValue;
 
             GameObject bestText = null;
@@ -165,15 +165,15 @@ namespace ParallelWorld
                     var b = cached.ButtonData;
                     if (b == null || !b.HasAnimation(db) || b.IsAnimationFinished()) continue;
 
-                    float dist = Vector3.Distance(triggerPos, go.transform.position);
+                    float distSq = (triggerPos - go.transform.position).sqrMagnitude;
                     int prio = b.GetPriority(db);
                     // 同距离：表模式按表序，Local 模式按 GetInstanceID 稳定排序
                     int bestId = bestButton != null ? bestButton.GetInstanceID() : 0;
-                    bool isBetter = dist < bestButtonDist
-                        || (Mathf.Approximately(dist, bestButtonDist) && (prio < bestButtonPriority || (prio == bestButtonPriority && go.GetInstanceID() < bestId)));
+                    bool isBetter = distSq < bestButtonDistSq
+                        || (Mathf.Approximately(distSq, bestButtonDistSq) && (prio < bestButtonPriority || (prio == bestButtonPriority && go.GetInstanceID() < bestId)));
                     if (isBetter)
                     {
-                        bestButtonDist = dist;
+                        bestButtonDistSq = distSq;
                         bestButtonPriority = prio;
                         bestButton = go;
                     }
@@ -198,11 +198,11 @@ namespace ParallelWorld
                 _interactButtonViewController?.SetPosition(bestButton.transform.position, offset);
                 _interactButtonViewController?.Show(bestButton);
 
-                // 同一物体既有文本又有按钮：文本在上
+                // 同一物体既有文本又有按钮：文本在上（使用缓存的 textData 避免 GetComponent）
                 var textData = bestButtonCached.InteractableData;
                 if (textData != null && _promptViewController != null)
                 {
-                    string text = InteractableData.ResolvePromptText(bestButton, _config);
+                    string text = InteractableData.ResolvePromptText(textData, _config);
                     _promptViewController.SetText(text);
                     _promptViewController.SetPosition(bestButton.transform.position, offset + new Vector3(0, 0.3f, 0));
                     _promptViewController.Show(bestButton);
@@ -215,7 +215,9 @@ namespace ParallelWorld
             {
                 _interactButtonViewController?.Hide();
 
-                string text = InteractableData.ResolvePromptText(bestText, _config);
+                string text = _componentCache.TryGetValue(bestText, out var bestTextCached) && bestTextCached.InteractableData != null
+                    ? InteractableData.ResolvePromptText(bestTextCached.InteractableData, _config)
+                    : InteractableData.ResolvePromptText(bestText, _config);
                 Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
                 _promptViewController?.SetText(text);
                 _promptViewController?.SetPosition(bestText.transform.position, offset);
