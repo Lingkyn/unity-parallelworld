@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6311a185d928ac14c84da90b8a80914c, type: 3}
+  m_Name: SpriteShadowConfig
+  m_EditorClassIdentifier: 
+  shadowExpand: 0.8
+  shadowThickness: 0.8
+  meshUpdateInterval: 2
+  colliderUpdateInterval: 4

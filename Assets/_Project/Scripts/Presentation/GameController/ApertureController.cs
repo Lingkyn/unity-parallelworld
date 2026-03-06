@@ -91,7 +91,7 @@ namespace ParallelWorld
 
         private void Update()
         {
-            if (lightInputAdapter == null || cam == null)
+            if (_apertureCore == null || lightInputAdapter == null || cam == null)
             {
                 _lastRayValid = false;
                 return;
@@ -162,6 +162,7 @@ namespace ParallelWorld
 
         private void LateUpdate()
         {
+            if (_apertureCore == null || _cache == null) return;
             if (!_apertureCore.IsActive || !Target.gameObject.activeInHierarchy) return;
 
             if (!_initialized)
