@@ -39,6 +39,12 @@ namespace ParallelWorld.Editor
                 if (createdInteraction) created++; else skipped++;
             }
 
+            // SpriteShadowConfig
+            if (TryCreateConfig<SpriteShadowConfig>("SpriteShadowConfig.asset", out bool createdShadow))
+            {
+                if (createdShadow) created++; else skipped++;
+            }
+
             // InteractableDatabase
             if (TryCreateConfig<InteractableDatabase>("InteractableDatabase.asset", out bool createdDb))
             {

@@ -14,7 +14,14 @@ namespace ParallelWorld
         [SerializeField] private Camera _camera;
         [SerializeField, Tooltip("提示框中心相对屏幕坐标的偏移（像素）")]
         private Vector2 _screenOffset = new Vector2(0, 20);
+        [SerializeField, Tooltip("未指定 Config 时的备用值；若 InteractionController 注入 Config 则优先用 Config.fixedPromptTopPx")]
+        private float _fallbackTopPx = 900f;
+        [SerializeField, Tooltip("UI 居中对齐时，resolvedStyle.width 为 0 时的备用宽度")]
+        private float _fallbackWidthPx = 150f;
 
+        private InteractionConfig _config;
+        private GameObject _currentTarget;
+        private Vector3 _lastWorldOffset;
         private Label _promptLabel;
         private VisualElement _root;
 
@@ -43,11 +50,22 @@ namespace ParallelWorld
                 Debug.LogWarning("[PromptViewController] 未找到名为 'Prompt' 的 Label，请检查 UIDocument 是否加载 Prompt.uxml");
         }
 
-        /// <summary>
-        /// 显示提示
-        /// </summary>
-        public void Show()
+        /// <summary>由 InteractionController 注入，用于读取 fixedPromptTopPx</summary>
+        public void SetConfig(InteractionConfig config) => _config = config;
+
+        private void LateUpdate()
         {
+            if (_currentTarget != null && _root != null && _root.style.display == DisplayStyle.Flex)
+                SetPosition(_currentTarget.transform.position, _lastWorldOffset);
+        }
+
+        /// <summary>
+        /// 显示提示，并关联可交互物用于每帧跟随
+        /// </summary>
+        /// <param name="target">可交互物，传入 null 时仅显示不跟随</param>
+        public void Show(GameObject target = null)
+        {
+            _currentTarget = target;
             if (_root != null)
                 _root.style.display = DisplayStyle.Flex;
         }
@@ -57,6 +75,7 @@ namespace ParallelWorld
         /// </summary>
         public void Hide()
         {
+            _currentTarget = null;
             var root = _root ?? _uiDocument?.rootVisualElement;
             if (root != null)
             {
@@ -81,14 +100,15 @@ namespace ParallelWorld
         {
             if (_camera == null || _root == null) return;
 
+            _lastWorldOffset = worldOffset;
             Vector3 target = worldPosition + worldOffset;
             Vector2 screenPos = _camera.WorldToScreenPoint(target);
             screenPos += _screenOffset;
+            float width = _root.resolvedStyle.width > 0 ? _root.resolvedStyle.width : _fallbackWidthPx;
+            float targetLeft = screenPos.x - width * 0.5f;
 
-            // UI Toolkit: top 为距离父元素顶部的距离；Screen 坐标 Y 向上
-            float topPx = Screen.height - screenPos.y;
-            _root.style.left = screenPos.x;
-            _root.style.top = topPx;
+            _root.style.left = targetLeft;
+            _root.style.top = _config != null ? _config.fixedPromptTopPx : _fallbackTopPx;
             _root.style.right = StyleKeyword.Auto;
             _root.style.bottom = StyleKeyword.Auto;
             _root.style.position = Position.Absolute;

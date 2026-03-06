@@ -15,6 +15,8 @@ namespace ParallelWorld
         [Header("提示位置")]
         [Tooltip("提示框相对对象头顶的世界坐标偏移")]
         public Vector3 promptOffset = new Vector3(0f, 1f, 0f);
+        [Tooltip("InteractableButton/InteractableText UI 距屏幕顶部的固定像素值（Y 轴固定，X 随对象变化）")]
+        public float fixedPromptTopPx = 900f;
 
         [Header("默认文本")]
         [Tooltip("无 IInteractable 时的兜底提示文本")]

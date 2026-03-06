@@ -68,7 +68,9 @@ namespace ParallelWorld
 
         private void Update()
         {
+            if (realPlayer == null || shadowPlayer == null) return;
             if (_realController == null || _shadowController == null) return;
+            if (_movementSystem == null) return;
 
             Transform activeTransform = realPlayer.gameObject.activeInHierarchy ? realPlayer : shadowPlayer;
             CharacterController activeController = activeTransform == realPlayer ? _realController : _shadowController;
