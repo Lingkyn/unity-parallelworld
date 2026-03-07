@@ -57,6 +57,12 @@ namespace ParallelWorld.Editor
                 if (createdBtnDb) created++; else skipped++;
             }
 
+            // DeathRespawnConfig
+            if (TryCreateConfig<DeathRespawnConfig>("DeathRespawnConfig.asset", out bool createdDeathRespawn))
+            {
+                if (createdDeathRespawn) created++; else skipped++;
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

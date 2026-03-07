@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace ParallelWorld
@@ -104,6 +105,41 @@ namespace ParallelWorld
 
             SyncXYAndParent(activeTransform);
             UpdateSpriteFlip(result.MoveDirection);
+        }
+
+        /// <summary>
+        /// 复活瞬移：禁用 CharacterController 后设置位置，避免物理冲突。供 DeathRespawnController 使用。
+        /// Physics.SyncTransforms 延后一帧执行，减轻与 CC 开关同帧触发的 JobTempAlloc 警告。
+        /// </summary>
+        public void TeleportTo(Vector3 worldPos)
+        {
+            if (realPlayer == null || shadowPlayer == null) return;
+            if (_realController != null) _realController.enabled = false;
+            if (_shadowController != null) _shadowController.enabled = false;
+            transform.position = worldPos;
+            SyncPositionsAfterTeleport();
+            if (_realController != null) _realController.enabled = true;
+            if (_shadowController != null) _shadowController.enabled = true;
+            StartCoroutine(DeferredSyncTransforms());
+        }
+
+        /// <summary>
+        /// 下一帧再执行 Physics.SyncTransforms，避免与 CharacterController 开关同帧触发过多物理 Job，缓解 JobTempAlloc 警告。
+        /// </summary>
+        private IEnumerator DeferredSyncTransforms()
+        {
+            yield return null;
+            Physics.SyncTransforms();
+        }
+
+        /// <summary>
+        /// 复活瞬移后调用：同步双躯体位置
+        /// </summary>
+        public void SyncPositionsAfterTeleport()
+        {
+            if (realPlayer == null || shadowPlayer == null) return;
+            Transform activeTransform = realPlayer.gameObject.activeInHierarchy ? realPlayer : shadowPlayer;
+            SyncXYAndParent(activeTransform);
         }
 
         /// <summary>
