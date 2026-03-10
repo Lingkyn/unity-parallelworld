@@ -28,6 +28,16 @@ namespace ParallelWorld
         private bool _didFirstFrameHide;
         private Coroutine _unlockCoroutine;
 
+        private PromptViewController[] _promptViewControllers;
+        private InteractButtonViewController[] _interactButtonViewControllers;
+
+        private struct CachedInteractable
+        {
+            public InteractableButtonData ButtonData;
+            public InteractableData InteractableData;
+        }
+        private Dictionary<GameObject, CachedInteractable> _componentCache;
+
         private void Awake()
         {
             if (_camera == null) _camera = Camera.main;
@@ -48,6 +58,10 @@ namespace ParallelWorld
 
             if (_config != null && _triggerDetector != null)
                 _triggerDetector.SetInteractableFilter(_config.interactableLayer);
+
+            _interactButtonViewController?.SetConfig(_config);
+            _promptViewController?.SetConfig(_config);
+            _componentCache = new Dictionary<GameObject, CachedInteractable>();
         }
 
         private void Start()
@@ -61,9 +75,11 @@ namespace ParallelWorld
             if (_interactButtonViewController != null)
                 _interactButtonViewController.OnClicked += OnInteractButtonClicked;
 
-            foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            _promptViewControllers = FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            _interactButtonViewControllers = FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var vc in _promptViewControllers)
                 vc.Hide();
-            foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var vc in _interactButtonViewControllers)
                 vc.Hide();
 
             if (_debugLog)
@@ -75,10 +91,10 @@ namespace ParallelWorld
             if (!_didFirstFrameHide && Time.frameCount >= 2 && _inRange.Count == 0)
             {
                 _didFirstFrameHide = true;
-                foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    vc.Hide();
-                foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    vc.Hide();
+                if (_promptViewControllers != null)
+                    foreach (var vc in _promptViewControllers) vc.Hide();
+                if (_interactButtonViewControllers != null)
+                    foreach (var vc in _interactButtonViewControllers) vc.Hide();
             }
         }
 
@@ -95,13 +111,23 @@ namespace ParallelWorld
 
         private void OnInteractableEnter(GameObject other)
         {
-            _inRange.Add(other);
+            if (other != null)
+            {
+                _inRange.Add(other);
+                _componentCache[other] = new CachedInteractable
+                {
+                    ButtonData = other.GetComponent<InteractableButtonData>(),
+                    InteractableData = other.GetComponent<InteractableData>()
+                };
+            }
             RefreshCurrentTarget();
         }
 
         private void OnInteractableExit(GameObject other)
         {
             _inRange.Remove(other);
+            if (other != null)
+                _componentCache.Remove(other);
             RefreshCurrentTarget();
         }
 
@@ -112,19 +138,19 @@ namespace ParallelWorld
         {
             if (_inRange.Count == 0)
             {
-                foreach (var vc in FindObjectsByType<PromptViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    vc.Hide();
-                foreach (var vc in FindObjectsByType<InteractButtonViewController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    vc.Hide();
+                if (_promptViewControllers != null)
+                    foreach (var vc in _promptViewControllers) vc.Hide();
+                if (_interactButtonViewControllers != null)
+                    foreach (var vc in _interactButtonViewControllers) vc.Hide();
                 return;
             }
 
             Vector3 triggerPos = _triggerDetector != null ? _triggerDetector.transform.position : Vector3.zero;
             var db = _config?.buttonDatabase;
 
-            // 分离按钮型与文本型
+            // 分离按钮型与文本型（用 sqrMagnitude 避免 sqrt 开销）
             GameObject bestButton = null;
-            float bestButtonDist = float.MaxValue;
+            float bestButtonDistSq = float.MaxValue;
             int bestButtonPriority = int.MaxValue;
 
             GameObject bestText = null;
@@ -132,21 +158,22 @@ namespace ParallelWorld
             foreach (var go in _inRange)
             {
                 if (go == null) continue;
+                if (!_componentCache.TryGetValue(go, out var cached)) continue;
 
                 if (go.CompareTag(Tags.InteractableButton))
                 {
-                    var b = go.GetComponent<InteractableButtonData>();
+                    var b = cached.ButtonData;
                     if (b == null || !b.HasAnimation(db) || b.IsAnimationFinished()) continue;
 
-                    float dist = Vector3.Distance(triggerPos, go.transform.position);
+                    float distSq = (triggerPos - go.transform.position).sqrMagnitude;
                     int prio = b.GetPriority(db);
                     // 同距离：表模式按表序，Local 模式按 GetInstanceID 稳定排序
                     int bestId = bestButton != null ? bestButton.GetInstanceID() : 0;
-                    bool isBetter = dist < bestButtonDist
-                        || (Mathf.Approximately(dist, bestButtonDist) && (prio < bestButtonPriority || (prio == bestButtonPriority && go.GetInstanceID() < bestId)));
+                    bool isBetter = distSq < bestButtonDistSq
+                        || (Mathf.Approximately(distSq, bestButtonDistSq) && (prio < bestButtonPriority || (prio == bestButtonPriority && go.GetInstanceID() < bestId)));
                     if (isBetter)
                     {
-                        bestButtonDist = dist;
+                        bestButtonDistSq = distSq;
                         bestButtonPriority = prio;
                         bestButton = go;
                     }
@@ -158,27 +185,27 @@ namespace ParallelWorld
             }
 
             // 显示按钮型
-            if (bestButton != null)
+            if (bestButton != null && _componentCache.TryGetValue(bestButton, out var bestButtonCached))
             {
                 if (_interactButtonViewController == null && _debugLog)
                     Debug.Log("[Interaction] bestButton found but _interactButtonViewController=null");
                 _promptViewController?.Hide();
 
-                var buttonData = bestButton.GetComponent<InteractableButtonData>();
+                var buttonData = bestButtonCached.ButtonData;
                 Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
 
                 _interactButtonViewController?.SetButtonText(buttonData.ResolveButtonText(db));
                 _interactButtonViewController?.SetPosition(bestButton.transform.position, offset);
                 _interactButtonViewController?.Show(bestButton);
 
-                // 同一物体既有文本又有按钮：文本在上
-                var textData = bestButton.GetComponent<InteractableData>();
+                // 同一物体既有文本又有按钮：文本在上（使用缓存的 textData 避免 GetComponent）
+                var textData = bestButtonCached.InteractableData;
                 if (textData != null && _promptViewController != null)
                 {
-                    string text = InteractableData.ResolvePromptText(bestButton, _config);
+                    string text = InteractableData.ResolvePromptText(textData, _config);
                     _promptViewController.SetText(text);
                     _promptViewController.SetPosition(bestButton.transform.position, offset + new Vector3(0, 0.3f, 0));
-                    _promptViewController.Show();
+                    _promptViewController.Show(bestButton);
                 }
 
                 if (_debugLog)
@@ -188,11 +215,13 @@ namespace ParallelWorld
             {
                 _interactButtonViewController?.Hide();
 
-                string text = InteractableData.ResolvePromptText(bestText, _config);
+                string text = _componentCache.TryGetValue(bestText, out var bestTextCached) && bestTextCached.InteractableData != null
+                    ? InteractableData.ResolvePromptText(bestTextCached.InteractableData, _config)
+                    : InteractableData.ResolvePromptText(bestText, _config);
                 Vector3 offset = _config != null ? _config.promptOffset : new Vector3(0, 1, 0);
                 _promptViewController?.SetText(text);
                 _promptViewController?.SetPosition(bestText.transform.position, offset);
-                _promptViewController?.Show();
+                _promptViewController?.Show(bestText);
 
                 if (_debugLog)
                     Debug.Log($"[Interaction] 显示文本: {bestText.name}, text={text}");
@@ -207,8 +236,13 @@ namespace ParallelWorld
         private void OnInteractButtonClicked(GameObject target)
         {
             if (target == null) return;
-
-            var buttonData = target.GetComponent<InteractableButtonData>();
+            if (!_componentCache.TryGetValue(target, out var cached))
+            {
+                var fallback = target.GetComponent<InteractableButtonData>();
+                if (fallback == null || !fallback.HasAnimation(_config?.buttonDatabase)) return;
+                cached = new CachedInteractable { ButtonData = fallback, InteractableData = null };
+            }
+            var buttonData = cached.ButtonData;
             if (buttonData == null || !buttonData.HasAnimation(_config?.buttonDatabase)) return;
 
             // 点击后立即隐藏按钮

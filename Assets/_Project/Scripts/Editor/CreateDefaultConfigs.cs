@@ -39,6 +39,12 @@ namespace ParallelWorld.Editor
                 if (createdInteraction) created++; else skipped++;
             }
 
+            // SpriteShadowConfig
+            if (TryCreateConfig<SpriteShadowConfig>("SpriteShadowConfig.asset", out bool createdShadow))
+            {
+                if (createdShadow) created++; else skipped++;
+            }
+
             // InteractableDatabase
             if (TryCreateConfig<InteractableDatabase>("InteractableDatabase.asset", out bool createdDb))
             {
@@ -49,6 +55,12 @@ namespace ParallelWorld.Editor
             if (TryCreateConfig<InteractableButtonDatabase>("InteractableButtonDatabase.asset", out bool createdBtnDb))
             {
                 if (createdBtnDb) created++; else skipped++;
+            }
+
+            // DeathRespawnConfig
+            if (TryCreateConfig<DeathRespawnConfig>("DeathRespawnConfig.asset", out bool createdDeathRespawn))
+            {
+                if (createdDeathRespawn) created++; else skipped++;
             }
 
             AssetDatabase.SaveAssets();

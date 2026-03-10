@@ -1,20 +1,30 @@
 using UnityEngine;
+using ParallelWorld;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class SpriteShadow : MonoBehaviour
 {
+    [Header("Config")]
+    [Tooltip("可选，配置阴影与性能参数；未分配时使用下方默认值")]
+    public SpriteShadowConfig config;
+
     [Header("Refs")]
     public Transform lightTransform;
     public Transform shadowObject;
     public LayerMask wallMask;
 
-    [Header("Shadow Settings")]
+    [Header("Shadow Settings (config 未分配时生效)")]
     public float shadowExpand = 0.8f;
     public float shadowThickness = 0.8f;
 
-    [Header("Performance")]
+    [Header("Performance (config 未分配时生效)")]
     public int meshUpdateInterval = 2;
     public int colliderUpdateInterval = 4;
+
+    private float ShadowExpand => config != null ? config.shadowExpand : shadowExpand;
+    private float ShadowThickness => config != null ? config.shadowThickness : shadowThickness;
+    private int MeshUpdateInterval => config != null ? config.meshUpdateInterval : meshUpdateInterval;
+    private int ColliderUpdateInterval => config != null ? config.colliderUpdateInterval : colliderUpdateInterval;
 
     private const string DEFAULT_LAYER_NAME = "Default";
     private const string STENCIL_LAYER_NAME = "RealObjects";
@@ -96,10 +106,10 @@ public class SpriteShadow : MonoBehaviour
 
         shadowCollider.enabled = true;
 
-        if (_frameCount % meshUpdateInterval == 0)
+        if (_frameCount % MeshUpdateInterval == 0)
             UpdateShadow();
 
-        if (_frameCount % colliderUpdateInterval == 0)
+        if (_frameCount % ColliderUpdateInterval == 0)
             UpdateBoxCollider();
     }
 
@@ -117,7 +127,7 @@ public class SpriteShadow : MonoBehaviour
             _verts[i] = ProjectToWall(_corners[i]);
 
         Vector3 normal = (_verts[1] - _verts[0]).normalized;
-        Vector3 depthDir = Vector3.Cross(normal, Vector3.up).normalized * shadowThickness;
+        Vector3 depthDir = Vector3.Cross(normal, Vector3.up).normalized * ShadowThickness;
 
         for (int i = 0; i < 4; i++)
             _verts[i + 4] = _verts[i] - depthDir;
@@ -152,7 +162,7 @@ public class SpriteShadow : MonoBehaviour
 
         if (Physics.Raycast(lightTransform.position, dir, out RaycastHit hit, 50f, wallMask))
         {
-            Vector3 expandedPoint = hit.point + dir * shadowExpand;
+            Vector3 expandedPoint = hit.point + dir * ShadowExpand;
             return shadowObject.InverseTransformPoint(expandedPoint);
         }
 

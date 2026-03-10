@@ -15,17 +15,17 @@ namespace ParallelWorld
         [SerializeField] private Camera _camera;
         [SerializeField, Tooltip("按钮相对屏幕坐标的偏移（像素）")]
         private Vector2 _screenOffset = new Vector2(0, 20);
-        [SerializeField, Range(0.05f, 1f), Tooltip("位置平滑系数，越小越平滑、延迟越大")]
-        private float _smoothFactor = 0.25f;
+        [SerializeField, Tooltip("未指定 Config 时的备用视口比例 0~1；若 InteractionController 注入 Config 则优先用 Config.promptTopViewport")]
+        [Range(0f, 1f)]
+        private float _fallbackTopViewport = 0.833f;
+
+        private InteractionConfig _config;
 
         private Button _button;
         private VisualElement _root;
         private bool _clickProcessed;
         private GameObject _currentTarget;
         private Vector3 _lastWorldOffset;
-        private float _smoothedLeft;
-        private float _smoothedTop;
-        private bool _hasSmoothedPos;
 
         /// <summary>
         /// 按钮被点击时触发，参数为当前关联的可交互物（由 InteractionController 设置）
@@ -61,6 +61,9 @@ namespace ParallelWorld
                 Debug.LogWarning("[InteractButtonViewController] 未找到名为 'InteractButton' 的 Button，请检查 UIDocument 是否加载 InteractButton.uxml");
         }
 
+        /// <summary>由 InteractionController 注入，用于读取 promptTopViewport</summary>
+        public void SetConfig(InteractionConfig config) => _config = config;
+
         private void LateUpdate()
         {
             if (_currentTarget != null && _root != null && _root.style.display == DisplayStyle.Flex)
@@ -87,7 +90,6 @@ namespace ParallelWorld
         {
             _currentTarget = target;
             _clickProcessed = false;
-            _hasSmoothedPos = false; // 重新显示时重置，避免从旧位置平滑
             if (_root != null)
                 _root.style.display = DisplayStyle.Flex;
         }
@@ -126,22 +128,13 @@ namespace ParallelWorld
             Vector3 target = worldPosition + worldOffset;
             Vector2 screenPos = _camera.WorldToScreenPoint(target);
             screenPos += _screenOffset;
-            float targetLeft = Mathf.Round(screenPos.x);
-            float targetTop = Mathf.Round(Screen.height - screenPos.y);
+            float viewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
 
-            if (!_hasSmoothedPos)
-            {
-                _smoothedLeft = targetLeft;
-                _smoothedTop = targetTop;
-                _hasSmoothedPos = true;
-            }
-            else
-            {
-                _smoothedLeft = Mathf.Lerp(_smoothedLeft, targetLeft, _smoothFactor);
-                _smoothedTop = Mathf.Lerp(_smoothedTop, targetTop, _smoothFactor);
-            }
-            _root.style.left = _smoothedLeft;
-            _root.style.top = _smoothedTop;
+            // X/Y 均用视口：适配多分辨率
+            float viewportX = Screen.width > 0 ? screenPos.x / Screen.width : 0f;
+            _root.style.left = Length.Percent(viewportX * 100f);
+            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
+            _root.style.top = Length.Percent(viewport * 100f);
             _root.style.right = StyleKeyword.Auto;
             _root.style.bottom = StyleKeyword.Auto;
             _root.style.position = Position.Absolute;

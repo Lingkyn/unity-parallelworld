@@ -15,6 +15,9 @@ namespace ParallelWorld
         [Header("提示位置")]
         [Tooltip("提示框相对对象头顶的世界坐标偏移")]
         public Vector3 promptOffset = new Vector3(0f, 1f, 0f);
+        [Tooltip("InteractableButton/InteractableText UI 距屏幕顶部的视口比例 0~1（如 0.833 = 83.3% 从顶部，适配多分辨率）")]
+        [Range(0f, 1f)]
+        public float promptTopViewport = 0.833f;
 
         [Header("默认文本")]
         [Tooltip("无 IInteractable 时的兜底提示文本")]

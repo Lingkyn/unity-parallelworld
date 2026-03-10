@@ -28,13 +28,10 @@ namespace ParallelWorld
         public string GetPromptText() => _promptText;
 
         /// <summary>
-        /// 解析提示文本：优先表查找，否则本地
+        /// 解析提示文本：优先表查找，否则本地（传入已缓存的 data 可避免 GetComponent）
         /// </summary>
-        public static string ResolvePromptText(GameObject go, InteractionConfig config)
+        public static string ResolvePromptText(InteractableData data, InteractionConfig config)
         {
-            if (go == null) return config?.defaultPromptText ?? "按 E 交互";
-
-            var data = go.GetComponent<InteractableData>();
             if (data != null)
             {
                 var effectiveConfig = data._config ?? config;
@@ -45,6 +42,19 @@ namespace ParallelWorld
                 }
                 return data._promptText ?? effectiveConfig?.defaultPromptText ?? "按 E 交互";
             }
+            return config?.defaultPromptText ?? "按 E 交互";
+        }
+
+        /// <summary>
+        /// 解析提示文本：从 GameObject 查找组件（无缓存时使用）
+        /// </summary>
+        public static string ResolvePromptText(GameObject go, InteractionConfig config)
+        {
+            if (go == null) return config?.defaultPromptText ?? "按 E 交互";
+
+            var data = go.GetComponent<InteractableData>();
+            if (data != null)
+                return ResolvePromptText(data, config);
 
             var interactable = go.GetComponent<IInteractable>();
             return interactable?.GetPromptText() ?? config?.defaultPromptText ?? "按 E 交互";
