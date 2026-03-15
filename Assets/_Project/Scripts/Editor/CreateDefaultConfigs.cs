@@ -63,6 +63,12 @@ namespace ParallelWorld.Editor
                 if (createdDeathRespawn) created++; else skipped++;
             }
 
+            // CheckpointDatabase（检查点表，RespawnPointDetector 表驱动用）
+            if (TryCreateConfig<CheckpointDatabase>("CheckpointDatabase.asset", out bool createdCheckpointDb))
+            {
+                if (createdCheckpointDb) created++; else skipped++;
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
