@@ -14,6 +14,8 @@ namespace ParallelWorld
         private MonoBehaviour deathVfx;
         [SerializeField, Tooltip("可选：复活特效，有则拖入")]
         private MonoBehaviour respawnVfx;
+        [SerializeField, Tooltip("可选：到达检查点时的反馈（UI/音效/特效）。不拖入时会在本物体上自动查找实现 ICheckpointFeedback 的组件")]
+        private MonoBehaviour checkpointFeedback;
 
         private MovementController movementController;
         private InteractionController interactionController;
@@ -22,6 +24,7 @@ namespace ParallelWorld
         private DeathRespawnSystem _system;
         private IDeathVFX _deathVfx;
         private IRespawnVFX _respawnVfx;
+        private ICheckpointFeedback _checkpointFeedback;
         private float _invincibleTimer;
         private bool _isRespawning;
 
@@ -36,12 +39,38 @@ namespace ParallelWorld
 
             _system = new DeathRespawnSystem();
             Vector3 defaultPos = config != null ? config.defaultSpawnPosition : Vector3.zero;
-            var firstRespawn = GameObject.FindGameObjectWithTag(Tags.Respawn);
-            if (firstRespawn != null)
-                defaultPos = firstRespawn.transform.position;
+            var detectors = FindObjectsByType<RespawnPointDetector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            RespawnPointDetector firstByOrder = null;
+            int minOrder = int.MaxValue;
+            foreach (var d in detectors)
+            {
+                if (d.gameObject.CompareTag(Tags.Respawn))
+                {
+                    int o = d.GetOrderForDefaultSpawn();
+                    if (o < minOrder)
+                    {
+                        minOrder = o;
+                        firstByOrder = d;
+                    }
+                }
+            }
+            if (firstByOrder != null)
+                defaultPos = firstByOrder.transform.position;
             _system.SetDefaultSpawnPosition(defaultPos);
             _deathVfx = deathVfx as IDeathVFX;
             _respawnVfx = respawnVfx as IRespawnVFX;
+            _checkpointFeedback = checkpointFeedback as ICheckpointFeedback;
+            if (_checkpointFeedback == null)
+            {
+                foreach (var mb in GetComponents<MonoBehaviour>())
+                {
+                    if (mb != null && mb is ICheckpointFeedback cf)
+                    {
+                        _checkpointFeedback = cf;
+                        break;
+                    }
+                }
+            }
         }
 
         private void Update()
@@ -66,11 +95,27 @@ namespace ParallelWorld
         }
 
         /// <summary>
-        /// 由 RespawnPointDetector 调用：玩家经过复活点时激活
+        /// 由 RespawnPointDetector 调用：玩家经过复活点时激活。order 为 0 表示默认检查点，不播反馈。
         /// </summary>
-        public void HandleRespawnPointActivated(Vector3 position, string checkpointId = null)
+        public void HandleRespawnPointActivated(Vector3 position, string checkpointId = null, int order = 0)
         {
-            _system?.NotifyActivateRespawnPoint(position, checkpointId);
+            bool isNewActivation = _system != null && _system.NotifyActivateRespawnPoint(position, checkpointId);
+            if (isNewActivation && order != 0)
+                _checkpointFeedback?.ShowCheckpointReached(position);
+        }
+
+        /// <summary>供存档系统：获取当前检查点 ID</summary>
+        public string GetCurrentCheckpointId() => _system?.GetCurrentCheckpointId();
+
+        /// <summary>供存档系统：获取当前检查点位置</summary>
+        public Vector3 GetCurrentCheckpointPosition() => _system != null ? _system.GetCurrentCheckpointPosition() : transform.position;
+
+        /// <summary>供存档系统：读档后恢复检查点并瞬移玩家到该位置</summary>
+        public void RestoreCheckpoint(Vector3 position, string checkpointId)
+        {
+            if (_system == null || movementController == null) return;
+            _system.SetRespawnFromCheckpoint(position, checkpointId);
+            movementController.TeleportTo(position);
         }
 
         /// <summary>
