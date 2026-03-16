@@ -23,7 +23,7 @@ namespace ParallelWorld
 
         private void Awake()
         {
-            _controller = FindFirstObjectByType<DeathRespawnController>();
+            _controller = ServiceLocator.Get<DeathRespawnController>();
             if (_controller == null)
                 Debug.LogWarning("[RespawnPointDetector] 未找到 DeathRespawnController，确保场景中有 Player");
         }
@@ -32,6 +32,8 @@ namespace ParallelWorld
         {
             if (other == null || other.gameObject == null) return;
             if (!other.CompareTag(Tags.Player)) return;
+            if (_controller == null)
+                _controller = ServiceLocator.Get<DeathRespawnController>();
             if (_controller == null) return;
 
             string id = ResolveCheckpointId();

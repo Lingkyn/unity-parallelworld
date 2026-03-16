@@ -71,6 +71,8 @@ namespace ParallelWorld
                     }
                 }
             }
+
+            ServiceLocator.Register(this);
         }
 
         private void Update()
