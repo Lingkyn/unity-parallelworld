@@ -3,8 +3,8 @@ using UnityEngine;
 namespace ParallelWorld
 {
     /// <summary>
-    /// 死亡复活控制器：挂 Player 根，接收 DeathZoneDetector/RespawnPointDetector 回调，
-    /// 编排死亡→瞬移→复活流程，禁用/恢复 Movement、Interaction、PlayerToggle
+    /// 死亡复活控制器：挂 Player 根，通过 EventBus 订阅 PlayerDeathRequested、RespawnPointActivated，
+    /// 编排死亡→瞬移→复活流程，禁用/恢复 Movement、Interaction、PlayerToggle，并发布 PlayerDied/PlayerRespawned/CheckpointActivated。
     /// </summary>
     public class DeathRespawnController : MonoBehaviour
     {
@@ -75,6 +75,21 @@ namespace ParallelWorld
             ServiceLocator.Register(this);
         }
 
+        private void OnEnable()
+        {
+            EventBus.PlayerDeathRequested += OnPlayerDeathRequested;
+            EventBus.RespawnPointActivated += OnRespawnPointActivated;
+        }
+
+        private void OnDisable()
+        {
+            EventBus.PlayerDeathRequested -= OnPlayerDeathRequested;
+            EventBus.RespawnPointActivated -= OnRespawnPointActivated;
+        }
+
+        private void OnPlayerDeathRequested() => HandleDeathRequested();
+        private void OnRespawnPointActivated(Vector3 position, string checkpointId, int order) => HandleRespawnPointActivated(position, checkpointId, order);
+
         private void Update()
         {
             if (_invincibleTimer > 0f)
@@ -97,13 +112,15 @@ namespace ParallelWorld
         }
 
         /// <summary>
-        /// 由 RespawnPointDetector 调用：玩家经过复活点时激活。order 为 0 表示默认检查点，不播反馈。
+        /// 由 EventBus.RespawnPointActivated 订阅调用：玩家经过复活点时激活。order 为 0 表示默认检查点，不播反馈。
         /// </summary>
         public void HandleRespawnPointActivated(Vector3 position, string checkpointId = null, int order = 0)
         {
             bool isNewActivation = _system != null && _system.NotifyActivateRespawnPoint(position, checkpointId);
             if (isNewActivation && order != 0)
                 _checkpointFeedback?.ShowCheckpointReached(position);
+            if (isNewActivation)
+                EventBus.PublishCheckpointActivated(position, checkpointId ?? "");
         }
 
         /// <summary>供存档系统：获取当前检查点 ID</summary>
@@ -146,7 +163,8 @@ namespace ParallelWorld
                 if (interactionController != null) interactionController.enabled = false;
                 if (playerToggleController != null) playerToggleController.enabled = false;
 
-                // 2. 死亡 VFX
+                // 2. 发布死亡事件并播放死亡 VFX
+                EventBus.PublishPlayerDied(deathPos);
                 if (_deathVfx != null)
                     _deathVfx.OnDeath(deathPos, forward);
 
@@ -173,7 +191,8 @@ namespace ParallelWorld
                 if (interactionController != null) interactionController.enabled = true;
                 if (playerToggleController != null) playerToggleController.enabled = true;
 
-                // 8. 启动无敌计时
+                // 8. 发布复活完成事件并启动无敌计时
+                EventBus.PublishPlayerRespawned(respawnPos);
                 _invincibleTimer = config.respawnInvincibleDuration;
             }
             finally

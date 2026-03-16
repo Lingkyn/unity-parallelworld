@@ -87,6 +87,7 @@ namespace ParallelWorld
             if (controller == null) return;
 
             controller.RestoreCheckpoint(data.Value.Position, data.Value.checkpointId);
+            EventBus.PublishCheckpointRestored(data.Value);
         }
 
         private static void WriteToPlayerPrefs(CheckpointSaveData data)
