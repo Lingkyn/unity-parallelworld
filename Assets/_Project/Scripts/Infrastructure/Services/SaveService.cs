@@ -50,7 +50,7 @@ namespace ParallelWorld
         /// <summary>将当前场景的检查点从 Controller 写入持久化</summary>
         public void SaveCheckpoint()
         {
-            var controller = FindFirstObjectByType<DeathRespawnController>();
+            var controller = ServiceLocator.Get<DeathRespawnController>();
             if (controller == null) return;
 
             string id = controller.GetCurrentCheckpointId();
@@ -83,7 +83,7 @@ namespace ParallelWorld
             string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             if (data.Value.sceneName != currentScene) return;
 
-            var controller = FindFirstObjectByType<DeathRespawnController>();
+            var controller = ServiceLocator.Get<DeathRespawnController>();
             if (controller == null) return;
 
             controller.RestoreCheckpoint(data.Value.Position, data.Value.checkpointId);
