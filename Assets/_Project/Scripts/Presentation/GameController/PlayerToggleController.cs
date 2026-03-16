@@ -60,8 +60,11 @@ namespace ParallelWorld
         /// </summary>
         public void Toggle()
         {
+            PlayerForm previous = _currentForm;
             _currentForm = _currentForm == PlayerForm.Real ? PlayerForm.Shadow : PlayerForm.Real;
             ApplyForm();
+            if (previous != _currentForm)
+                EventBus.PublishPlayerFormChanged(previous, _currentForm);
         }
 
         /// <summary>
@@ -69,8 +72,11 @@ namespace ParallelWorld
         /// </summary>
         public void SetActiveForm(PlayerForm form)
         {
+            PlayerForm previous = _currentForm;
             _currentForm = form;
             ApplyForm();
+            if (previous != _currentForm)
+                EventBus.PublishPlayerFormChanged(previous, _currentForm);
         }
 
         /// <summary>

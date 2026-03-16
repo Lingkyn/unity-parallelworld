@@ -19,26 +19,14 @@ namespace ParallelWorld
         [Tooltip("同场景内排序，升序最小者可作为默认出生点")]
         [SerializeField] private int order;
 
-        private DeathRespawnController _controller;
-
-        private void Awake()
-        {
-            _controller = ServiceLocator.Get<DeathRespawnController>();
-            if (_controller == null)
-                Debug.LogWarning("[RespawnPointDetector] 未找到 DeathRespawnController，确保场景中有 Player");
-        }
-
         private void OnTriggerEnter(Collider other)
         {
             if (other == null || other.gameObject == null) return;
             if (!other.CompareTag(Tags.Player)) return;
-            if (_controller == null)
-                _controller = ServiceLocator.Get<DeathRespawnController>();
-            if (_controller == null) return;
 
             string id = ResolveCheckpointId();
             int order = GetOrderForDefaultSpawn();
-            _controller.HandleRespawnPointActivated(transform.position, id, order);
+            EventBus.PublishRespawnPointActivated(transform.position, id, order);
         }
 
         private string ResolveCheckpointId()
