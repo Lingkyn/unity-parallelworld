@@ -7,9 +7,9 @@ namespace ParallelWorld
     /// <summary>
     /// 交互系统控制器：整合 TriggerDetector、PromptViewController、InteractButtonViewController
     /// 按 Tag 分支：InteractableButton 显示按钮，点击播放动画；其他显示文本
-    /// 多按钮时按距离+表序选最近；播放中锁定玩家
+    /// 多按钮时按距离+表序选最近；播放中锁定玩家。实现 IInteractExecutor，供 InteractCommand 与多源触发。
     /// </summary>
-    public class InteractionController : MonoBehaviour
+    public class InteractionController : MonoBehaviour, IInteractExecutor
     {
         [Header("引用")]
         [SerializeField] private TriggerDetector _triggerDetector;
@@ -234,6 +234,15 @@ namespace ParallelWorld
         }
 
         private void OnInteractButtonClicked(GameObject target)
+        {
+            var command = new InteractCommand(this, target);
+            command.Execute();
+        }
+
+        /// <summary>
+        /// IInteractExecutor：对指定可交互物执行一次交互（播放动画 + 锁定/解锁玩家），供 Command 与多源触发。
+        /// </summary>
+        public void ExecuteInteraction(GameObject target)
         {
             if (target == null) return;
             if (!_componentCache.TryGetValue(target, out var cached))

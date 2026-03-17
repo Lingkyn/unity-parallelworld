@@ -4,9 +4,9 @@ namespace ParallelWorld
 {
     /// <summary>
     /// 玩家躯体切换控制器：按 X 键在 RealPlayer 与 ShadowPlayer 之间切换显示
-    /// 与光圈系统同时响应 X 键，各自独立处理
+    /// 与光圈系统同时响应 X 键，各自独立处理。实现 IPlayerFormSwitcher，供 Command 与 UI/脚本等多源触发。
     /// </summary>
-    public class PlayerToggleController : MonoBehaviour
+    public class PlayerToggleController : MonoBehaviour, IPlayerFormSwitcher
     {
         [Header("引用")]
         [SerializeField, Tooltip("实体玩家（Real 躯体）")]
@@ -45,6 +45,8 @@ namespace ParallelWorld
 
             _currentForm = defaultForm;
             ApplyForm();
+
+            ServiceLocator.Register<IPlayerFormSwitcher>(this);
         }
 
         private void Update()
@@ -52,7 +54,8 @@ namespace ParallelWorld
             if (inputAdapter == null || !inputAdapter.GetTogglePlayerPressed())
                 return;
 
-            Toggle();
+            var command = new TogglePlayerFormCommand(this);
+            command.Execute();
         }
 
         /// <summary>
