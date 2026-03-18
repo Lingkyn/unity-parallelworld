@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6311a185d928ac14c84da90b8a80914c, type: 3}
   m_Name: SpriteShadowConfig
   m_EditorClassIdentifier: 
-  shadowExpand: 0.8
-  shadowThickness: 0.8
+  shadowExpand: -0.2
+  shadowThickness: 0.6
   meshUpdateInterval: 2
-  colliderUpdateInterval: 4
+  colliderUpdateInterval: 6
