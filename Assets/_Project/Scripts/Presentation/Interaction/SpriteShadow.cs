@@ -14,12 +14,12 @@ public class SpriteShadow : MonoBehaviour
     public LayerMask wallMask;
 
     [Header("Shadow Settings (config 未分配时生效)")]
-    public float shadowExpand = 0.8f;
-    public float shadowThickness = 0.8f;
+    public float shadowExpand = -0.2f;
+    public float shadowThickness = 0.6f;
 
     [Header("Performance (config 未分配时生效)")]
     public int meshUpdateInterval = 2;
-    public int colliderUpdateInterval = 4;
+    public int colliderUpdateInterval = 6;
 
     private float ShadowExpand => config != null ? config.shadowExpand : shadowExpand;
     private float ShadowThickness => config != null ? config.shadowThickness : shadowThickness;
