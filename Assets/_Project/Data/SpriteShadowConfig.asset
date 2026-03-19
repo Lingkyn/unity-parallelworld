@@ -12,7 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6311a185d928ac14c84da90b8a80914c, type: 3}
   m_Name: SpriteShadowConfig
   m_EditorClassIdentifier: 
+  autoCollectSpotLightsInChildren: 1
+  autoCreateShadowObject: 1
+  shadowObjectPrefix: Shadow_
+  shadowRootName: ShadowRoot
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 128
   shadowExpand: -0.2
   shadowThickness: 0.6
+  projectionRayDistance: 200
+  shadowColliderIsTrigger: 0
+  shadowMaterial: {fileID: 0}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
   meshUpdateInterval: 2
   colliderUpdateInterval: 6
