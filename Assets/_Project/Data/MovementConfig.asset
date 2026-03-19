@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 8
   gravity: 25
-  jumpForce: 14
+  jumpForce: 13.5
   airControl: 0.8
   coyoteTime: 0.15
   jumpBufferTime: 0.18
