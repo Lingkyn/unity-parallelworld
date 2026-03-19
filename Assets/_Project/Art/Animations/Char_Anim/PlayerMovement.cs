@@ -1,33 +1,40 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
+    public float jumpForce = 8f;
+
     private Animator animator;
+    private Rigidbody rb;
 
     void Start()
     {
         animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
         float move = Input.GetAxis("Horizontal");
 
-        // “∆∂ØΩ«…´
-        transform.Translate(Vector3.right * move * speed * Time.deltaTime);
+        // ‚úÖ ÁßªÂä®ÔºàÊñ∞ÁâàÂÜôÊ≥ïÔºâ
+        rb.linearVelocity = new Vector3(move * speed, rb.linearVelocity.y, 0);
 
-        // øÿ÷∆∂Øª≠
+        // Âä®Áîª
         animator.SetBool("isRunning", move != 0);
 
-        // øÿ÷∆Ω«…´≥ØœÚ
+        // ÊúùÂêë
         if (move > 0)
-        {
-            transform.localScale = new Vector3(1, 1, 1); // ≥Ø”“
-        }
+            transform.localScale = new Vector3(1, 1, 1);
         else if (move < 0)
+            transform.localScale = new Vector3(-1, 1, 1);
+
+        // Ë∑≥Ë∑É
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            transform.localScale = new Vector3(-1, 1, 1); // ≥Ø◊Û
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, 0);
+            animator.SetTrigger("Jump");
         }
     }
 }
