@@ -15,5 +15,5 @@ MonoBehaviour:
   _entries:
   - entryId: cup
     buttonText: Push
-    animationClip: {fileID: 7400000, guid: 1f5264478d632c04a870d94be118a398, type: 2}
+    animationClip: {fileID: 7400000, guid: 5dcc83a83e4eddd459d01036afc9a65a, type: 2}
     defaultStateName: Idle
