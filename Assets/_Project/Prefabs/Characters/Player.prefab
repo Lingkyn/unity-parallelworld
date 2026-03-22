@@ -143,6 +143,7 @@ MonoBehaviour:
   animators:
   - {fileID: 5594320945766931417}
   - {fileID: 5572175243346599987}
+  runningThreshold: 0.01
 --- !u!114 &8800997700112233445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,7 +178,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3707138129406922868, guid: c8690e92c963a014db3395dd39ffd806, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.93
+      value: -8.929999
       objectReference: {fileID: 0}
     - target: {fileID: 3707138129406922868, guid: c8690e92c963a014db3395dd39ffd806, type: 3}
       propertyPath: m_LocalPosition.y
@@ -517,7 +518,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2543625243604414410, guid: f92d4350c564cd8448969e679723f0b9, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4561296607920974981, guid: f92d4350c564cd8448969e679723f0b9, type: 3}
       propertyPath: m_Name

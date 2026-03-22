@@ -25,6 +25,8 @@ namespace ParallelWorld
         private float flipThreshold = 0.1f;
         [SerializeField, Tooltip("Animator 列表：用于在翻转时触发 Flip 动画")]
         private Animator[] animators;
+        [SerializeField, Tooltip("移动输入绝对值大于此值时置 isRunning=true")]
+        private float runningThreshold = 0.01f;
 
         private CharacterController _realController;
         private CharacterController _shadowController;
@@ -104,6 +106,8 @@ namespace ParallelWorld
             activeController.Move(velocity);
 
             SyncXYAndParent(activeTransform);
+            UpdateRunningAnimation(moveIntent);
+            UpdateJumpAnimation(jumpPressed);
             UpdateSpriteFlip(result.MoveDirection);
         }
 
@@ -212,6 +216,7 @@ namespace ParallelWorld
             if (Mathf.Abs(horizontalInput) <= flipThreshold) return;
 
             bool faceRight = horizontalInput < 0f;
+            UpdateFacingScale(horizontalInput);
 
             if (_lastFaceRight.HasValue && _lastFaceRight.Value != faceRight && animators != null)
             {
@@ -224,6 +229,47 @@ namespace ParallelWorld
             {
                 if (sr != null)
                     sr.flipX = faceRight;
+            }
+        }
+
+        private void UpdateFacingScale(float horizontalInput)
+        {
+            float targetScaleX = horizontalInput > 0f ? 1f : -1f;
+            ApplyFacingScale(realPlayer, targetScaleX);
+            ApplyFacingScale(shadowPlayer, targetScaleX);
+        }
+
+        private static void ApplyFacingScale(Transform target, float scaleX)
+        {
+            if (target == null) return;
+
+            Vector3 scale = target.localScale;
+            float baseX = Mathf.Abs(scale.x);
+            if (baseX < 0.0001f) baseX = 1f;
+            target.localScale = new Vector3(scaleX > 0f ? baseX : -baseX, scale.y, scale.z);
+        }
+
+        private void UpdateRunningAnimation(Vector2 moveIntent)
+        {
+            if (animators == null || animators.Length == 0) return;
+
+            bool isRunning = moveIntent.sqrMagnitude > (runningThreshold * runningThreshold);
+            foreach (var a in animators)
+            {
+                if (a != null)
+                    a.SetBool("isRunning", isRunning);
+            }
+        }
+
+        private void UpdateJumpAnimation(bool jumpedThisFrame)
+        {
+            if (!jumpedThisFrame) return;
+            if (animators == null || animators.Length == 0) return;
+
+            foreach (var a in animators)
+            {
+                if (a != null)
+                    a.SetTrigger("Jump");
             }
         }
     }
