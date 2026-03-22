@@ -19,5 +19,5 @@ MonoBehaviour:
     defaultStateName: Idle
   - entryId: test
     buttonText: Push
-    animationClip: {fileID: 7400000, guid: 5dcc83a83e4eddd459d01036afc9a65a, type: 2}
+    animationClip: {fileID: 7400000, guid: 563b471dd07907743bc2aeaf25801d3a, type: 2}
     defaultStateName: Idle
