@@ -187728,16 +187728,12 @@ MonoBehaviour:
   meshUpdateInterval: 2
   colliderUpdateInterval: 6
   topSupportPadding: 0.12
-
 --- !u!65 &640973783
 BoxCollider:
-
-
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-
   m_GameObject: {fileID: 640973779}
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -187751,9 +187747,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 17.43, y: 4.89, z: 0.2}
-  m_Center: {x: 0, y: 0.00000047683716, z: 0}
-
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &643412992
 GameObject:
   m_ObjectHideFlags: 0
@@ -189175,7 +189170,6 @@ GameObject:
   - component: {fileID: 647477314}
   - component: {fileID: 647477317}
   - component: {fileID: 647477316}
-  - component: {fileID: 647477318}
   m_Layer: 9
   m_Name: power
   m_TagString: InteractableButton
@@ -189298,27 +189292,6 @@ MonoBehaviour:
   _defaultStateName: 
   _config: {fileID: 11400000, guid: 4a136e06ee2376645b1d614dc5f7cd5a, type: 2}
 --- !u!65 &647477317
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 647477312}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.9099998, y: 2.7699997, z: 0.19999999}
-  m_Center: {x: 0, y: 0, z: -0.000000063329935}
---- !u!65 &647477318
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -306042,7 +306015,6 @@ GameObject:
   - component: {fileID: 1748246414}
   - component: {fileID: 1748246411}
   - component: {fileID: 1748246413}
-  - component: {fileID: 1748246415}
   m_Layer: 9
   m_Name: paper shredder
   m_TagString: InteractableButton
@@ -306185,27 +306157,6 @@ MonoBehaviour:
   _animationClip: {fileID: 0}
   _defaultStateName: 
   _config: {fileID: 11400000, guid: 4a136e06ee2376645b1d614dc5f7cd5a, type: 2}
---- !u!65 &1748246415
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1748246409}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 21.435518, y: 20.189997, z: 0.19999999}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1749125348
 GameObject:
   m_ObjectHideFlags: 0
@@ -384745,5 +384696,4 @@ SceneRoots:
   - {fileID: 1664667411}
   - {fileID: 134437200}
   - {fileID: 1386922318}
-  - {fileID: 641836904}
   - {fileID: 1373780800}
