@@ -23,7 +23,7 @@ MonoBehaviour:
     defaultStateName: Idle
   - entryId: unplug
     buttonText: unplug
-    animationClip: {fileID: 7400000, guid: 563b471dd07907743bc2aeaf25801d3a, type: 2}
+    animationClip: {fileID: 7400000, guid: a9483a2e5c37c1445b7e3327e1712ea2, type: 2}
     defaultStateName: Idle
   - entryId: shredder
     buttonText: turn on
