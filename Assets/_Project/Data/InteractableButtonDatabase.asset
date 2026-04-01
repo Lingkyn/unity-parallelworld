@@ -27,5 +27,5 @@ MonoBehaviour:
     defaultStateName: Idle
   - entryId: shredder
     buttonText: turn on
-    animationClip: {fileID: 7400000, guid: 563b471dd07907743bc2aeaf25801d3a, type: 2}
+    animationClip: {fileID: 7400000, guid: eaa569735f6541c458c534940196a5e4, type: 2}
     defaultStateName: Idle
