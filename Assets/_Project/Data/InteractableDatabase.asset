@@ -17,3 +17,5 @@ MonoBehaviour:
     promptText: Press [X] to turn on light
   - entryId: mirror
     promptText: Click the light to move
+  - entryId: photo
+    promptText: Collect the photo
