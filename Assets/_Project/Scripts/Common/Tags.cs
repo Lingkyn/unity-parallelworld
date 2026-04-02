@@ -15,6 +15,11 @@ public static class Tags
     public const string InteractableButton = "InteractableButton";
 
     /// <summary>
+    /// 与 InteractableText 相同数据与触发，文案显示在玩家头顶（DialogueViewController）
+    /// </summary>
+    public const string InteractablePlayerText = "InteractablePlayerText";
+
+    /// <summary>
     /// 复活点（Unity 自带 Tag）
     /// </summary>
     public const string Respawn = "Respawn";

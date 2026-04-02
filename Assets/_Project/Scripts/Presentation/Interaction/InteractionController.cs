@@ -5,9 +5,10 @@ using UnityEngine;
 namespace ParallelWorld
 {
     /// <summary>
-    /// 交互系统控制器：整合 TriggerDetector、PromptViewController、InteractButtonViewController
-    /// 按 Tag 分支：InteractableButton 显示按钮，点击播放动画；其他显示文本
+    /// 交互系统控制器：整合 TriggerDetector、PromptViewController、InteractButtonViewController、DialogueViewController
+    /// 按 Tag 分支：InteractableButton 显示按钮；InteractableText 显示靠近提示；InteractablePlayerText 显示玩家头顶对话（可与前者并行）
     /// 多按钮时按距离+表序选最近；播放中锁定玩家。实现 IInteractExecutor，供 InteractCommand 与多源触发。
+    /// 向 Prompt / Dialogue 注入 InteractionConfig。
     /// </summary>
     public class InteractionController : MonoBehaviour, IInteractExecutor
     {
@@ -15,6 +16,7 @@ namespace ParallelWorld
         [SerializeField] private TriggerDetector _triggerDetector;
         [SerializeField] private PromptViewController _promptViewController;
         [SerializeField] private InteractButtonViewController _interactButtonViewController;
+        [SerializeField] private DialogueViewController _dialogueViewController;
         [SerializeField] private InteractionConfig _config;
 
         /// <summary>供 InteractableButtonData 等在 Start 时解析表配置使用</summary>
@@ -61,6 +63,7 @@ namespace ParallelWorld
 
             _interactButtonViewController?.SetConfig(_config);
             _promptViewController?.SetConfig(_config);
+            _dialogueViewController?.SetConfig(_config);
             _componentCache = new Dictionary<GameObject, CachedInteractable>();
         }
 
@@ -132,7 +135,7 @@ namespace ParallelWorld
         }
 
         /// <summary>
-        /// 从范围内选出最佳可交互物：按钮型按距离+表序，文本型取第一个；同时支持文本+按钮
+        /// 从范围内选出最佳可交互物：按钮/靠近文本/头顶文案各按 Tag 分离；按钮与文本按距离+稳定序；InteractablePlayerText 独立驱动 Dialogue
         /// </summary>
         private void RefreshCurrentTarget()
         {
@@ -142,6 +145,7 @@ namespace ParallelWorld
                     foreach (var vc in _promptViewControllers) vc.Hide();
                 if (_interactButtonViewControllers != null)
                     foreach (var vc in _interactButtonViewControllers) vc.Hide();
+                _dialogueViewController?.Hide();
                 return;
             }
 
@@ -154,6 +158,10 @@ namespace ParallelWorld
             int bestButtonPriority = int.MaxValue;
 
             GameObject bestText = null;
+            float bestTextDistSq = float.MaxValue;
+
+            GameObject bestPlayerHead = null;
+            float bestPlayerHeadDistSq = float.MaxValue;
 
             foreach (var go in _inRange)
             {
@@ -178,9 +186,29 @@ namespace ParallelWorld
                         bestButton = go;
                     }
                 }
-                else if (bestText == null)
+                else if (go.CompareTag(Tags.InteractableText))
                 {
-                    bestText = go;
+                    float distSq = (triggerPos - go.transform.position).sqrMagnitude;
+                    int bestTextId = bestText != null ? bestText.GetInstanceID() : 0;
+                    bool isBetterText = distSq < bestTextDistSq
+                        || (Mathf.Approximately(distSq, bestTextDistSq) && go.GetInstanceID() < bestTextId);
+                    if (isBetterText)
+                    {
+                        bestTextDistSq = distSq;
+                        bestText = go;
+                    }
+                }
+                else if (go.CompareTag(Tags.InteractablePlayerText))
+                {
+                    float distSq = (triggerPos - go.transform.position).sqrMagnitude;
+                    int bestHeadId = bestPlayerHead != null ? bestPlayerHead.GetInstanceID() : 0;
+                    bool isBetterHead = distSq < bestPlayerHeadDistSq
+                        || (Mathf.Approximately(distSq, bestPlayerHeadDistSq) && go.GetInstanceID() < bestHeadId);
+                    if (isBetterHead)
+                    {
+                        bestPlayerHeadDistSq = distSq;
+                        bestPlayerHead = go;
+                    }
                 }
             }
 
@@ -231,6 +259,18 @@ namespace ParallelWorld
                 _promptViewController?.Hide();
                 _interactButtonViewController?.Hide();
             }
+
+            if (bestPlayerHead != null && _dialogueViewController != null)
+            {
+                string headText = _componentCache.TryGetValue(bestPlayerHead, out var headCached) && headCached.InteractableData != null
+                    ? InteractableData.ResolvePromptText(headCached.InteractableData, _config)
+                    : InteractableData.ResolvePromptText(bestPlayerHead, _config);
+                _dialogueViewController.Show(headText);
+                if (_debugLog)
+                    Debug.Log($"[Interaction] 头顶对话: {bestPlayerHead.name}, text={headText}");
+            }
+            else
+                _dialogueViewController?.Hide();
         }
 
         private void OnInteractButtonClicked(GameObject target)
