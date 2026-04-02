@@ -94,6 +94,7 @@ MonoBehaviour:
   _triggerDetector: {fileID: 6327480301986327883}
   _promptViewController: {fileID: 1056226466457079683}
   _interactButtonViewController: {fileID: 4591887691629606657}
+  _dialogueViewController: {fileID: 8833445566778899001}
   _config: {fileID: 11400000, guid: 4a136e06ee2376645b1d614dc5f7cd5a, type: 2}
   _camera: {fileID: 3834520698092598062}
   _debugLog: 0
@@ -588,6 +589,10 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 3834520698092598062}
+    - target: {fileID: 6612345678901234504, guid: 2d009d832adac374486f724c47841454, type: 3}
+      propertyPath: _camera
+      value: 
+      objectReference: {fileID: 3834520698092598062}
     - target: {fileID: 5065537155360290655, guid: 2d009d832adac374486f724c47841454, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.1406803
@@ -666,6 +671,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 08f84c401f691ae4ca43496d4efbaeaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8833445566778899001 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6612345678901234504, guid: 2d009d832adac374486f724c47841454, type: 3}
+  m_PrefabInstance: {fileID: 5544330518745212095}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c3a91d2e4b5c6d708192a3b4c5d6e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &6429283212301789996

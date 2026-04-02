@@ -125,19 +125,8 @@ namespace ParallelWorld
             if (_camera == null || _root == null) return;
 
             _lastWorldOffset = worldOffset;
-            Vector3 target = worldPosition + worldOffset;
-            Vector2 screenPos = _camera.WorldToScreenPoint(target);
-            screenPos += _screenOffset;
-            float viewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
-
-            // X/Y 均用视口：适配多分辨率
-            float viewportX = Screen.width > 0 ? screenPos.x / Screen.width : 0f;
-            _root.style.left = Length.Percent(viewportX * 100f);
-            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
-            _root.style.top = Length.Percent(viewport * 100f);
-            _root.style.right = StyleKeyword.Auto;
-            _root.style.bottom = StyleKeyword.Auto;
-            _root.style.position = Position.Absolute;
+            float topViewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
+            ProximityPromptLayout.Apply(_root, _camera, worldPosition, worldOffset, _screenOffset, topViewport);
         }
     }
 }

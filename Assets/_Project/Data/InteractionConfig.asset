@@ -17,6 +17,8 @@ MonoBehaviour:
     m_Bits: 769
   promptOffset: {x: -0.85, y: 0, z: 0}
   promptTopViewport: 0.85
+  dialogueWorldOffset: {x: -0.6, y: 1, z: 0}
+  dialogueTopViewport: 0.55
   defaultPromptText: "\u6309\u3010X\u3011\u5F00\u542F\u4E3B\u5149"
   database: {fileID: 11400000, guid: cbf4df7b42dd882489ce12c129a47c3a, type: 2}
   buttonDatabase: {fileID: 11400000, guid: 65c09406e3a0fcb4092a510b482e2f90, type: 2}

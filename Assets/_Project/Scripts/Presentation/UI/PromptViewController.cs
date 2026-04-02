@@ -100,19 +100,38 @@ namespace ParallelWorld
             if (_camera == null || _root == null) return;
 
             _lastWorldOffset = worldOffset;
-            Vector3 target = worldPosition + worldOffset;
-            Vector2 screenPos = _camera.WorldToScreenPoint(target);
-            screenPos += _screenOffset;
+            float topViewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
+            ProximityPromptLayout.Apply(_root, _camera, worldPosition, worldOffset, _screenOffset, topViewport);
+        }
+    }
 
-            // X/Y 均用视口：适配多分辨率
+    /// <summary>
+    /// 靠近提示、玩家对话、交互按钮共用的屏幕定位：水平跟随世界锚点投影，竖直由调用方传入的 <paramref name="topViewport"/> 决定。
+    /// </summary>
+    public static class ProximityPromptLayout
+    {
+        public static void Apply(
+            VisualElement root,
+            Camera camera,
+            Vector3 worldPosition,
+            Vector3 worldOffset,
+            Vector2 screenOffset,
+            float topViewport)
+        {
+            if (camera == null || root == null)
+                return;
+
+            Vector3 anchor = worldPosition + worldOffset;
+            Vector2 screenPos = camera.WorldToScreenPoint(anchor);
+            screenPos += screenOffset;
+
             float viewportX = Screen.width > 0 ? screenPos.x / Screen.width : 0f;
-            _root.style.left = Length.Percent(viewportX * 100f);
-            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
-            float viewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
-            _root.style.top = Length.Percent(viewport * 100f);
-            _root.style.right = StyleKeyword.Auto;
-            _root.style.bottom = StyleKeyword.Auto;
-            _root.style.position = Position.Absolute;
+            root.style.left = Length.Percent(viewportX * 100f);
+            root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
+            root.style.top = Length.Percent(topViewport * 100f);
+            root.style.right = StyleKeyword.Auto;
+            root.style.bottom = StyleKeyword.Auto;
+            root.style.position = Position.Absolute;
         }
     }
 }

@@ -30,7 +30,9 @@ namespace ParallelWorld
             if (go == null) return false;
             if (interactableLayer != 0 && ((1 << go.layer) & interactableLayer) == 0)
                 return false;
-            return go.CompareTag(Tags.InteractableButton) || go.CompareTag(Tags.InteractableText);
+            return go.CompareTag(Tags.InteractableButton)
+                || go.CompareTag(Tags.InteractableText)
+                || go.CompareTag(Tags.InteractablePlayerText);
         }
 
         private void OnTriggerEnter(Collider other)
