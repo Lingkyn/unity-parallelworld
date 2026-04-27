@@ -221,7 +221,7 @@ namespace ParallelWorld
             if (_lastFaceRight.HasValue && _lastFaceRight.Value != faceRight && animators != null)
             {
                 foreach (var a in animators)
-                    if (a != null) a.SetTrigger("Flip");
+                    if (a != null) TrySetFlipTrigger(a);
             }
             _lastFaceRight = faceRight;
 
@@ -237,6 +237,20 @@ namespace ParallelWorld
             float targetScaleX = horizontalInput > 0f ? 1f : -1f;
             ApplyFacingScale(realPlayer, targetScaleX);
             ApplyFacingScale(shadowPlayer, targetScaleX);
+        }
+
+        /// <summary>仅当该 Animator 控制器上存在名为 Flip 的 Trigger 时才触发，避免控制台报 Parameter does not exist。</summary>
+        private static void TrySetFlipTrigger(Animator animator)
+        {
+            if (animator.runtimeAnimatorController == null) return;
+            foreach (var p in animator.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Trigger && p.name == "Flip")
+                {
+                    animator.SetTrigger("Flip");
+                    return;
+                }
+            }
         }
 
         private static void ApplyFacingScale(Transform target, float scaleX)

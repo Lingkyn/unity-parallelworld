@@ -20,7 +20,7 @@ MonoBehaviour:
     stopWhenPlayerExit: 0
     triggerTag: Player
   entries:
-  - prefab: {fileID: 4945553242757469660, guid: 45337eb52c93d934d9cabaa6a5b0a1b1, type: 3}
-    lifetime: 5
-    initialDirection: {x: 0, y: 0, z: 1}
-    initialSpeed: 0
+  - prefab: {fileID: 2879780088684610851, guid: 0f7a1b5f4e0c4b628c0f2e0eaec8a671, type: 3}
+    lifetime: 0
+    initialDirection: {x: -1, y: 0, z: 0}
+    initialSpeed: 1.5
