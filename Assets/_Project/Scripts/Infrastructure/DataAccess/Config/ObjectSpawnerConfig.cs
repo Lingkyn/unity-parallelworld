@@ -20,7 +20,7 @@ namespace ParallelWorld
     public class SpawnEntry
     {
         public GameObject prefab;
-        [Min(0.01f)]
+        [Min(0f), Tooltip("秒；0 = 不按秒自动销毁（由 Prefab 上其它逻辑销毁，如复活后清除危险物）")]
         public float lifetime = 5f;
         public Vector3 initialDirection = Vector3.forward;
         [Min(0f)]
