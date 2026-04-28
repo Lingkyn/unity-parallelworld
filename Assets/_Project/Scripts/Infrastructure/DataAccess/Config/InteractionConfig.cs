@@ -13,7 +13,7 @@ namespace ParallelWorld
         public LayerMask interactableLayer;
 
         [Header("靠近提示位置")]
-        [Tooltip("相对可交互物锚点的世界坐标偏移；仅用于靠近文本提示与交互按钮 UI")]
+        [Tooltip("Prompt UI 相对物体屏幕投影位置的像素偏移（X/Y 为像素，Z 暂不使用）")]
         public Vector3 promptOffset = new Vector3(0f, 1f, 0f);
         [Tooltip("靠近提示与交互按钮距屏幕顶部的视口比例 0~1（如 0.833）；水平跟随锚点屏幕投影；数值更小则更靠上")]
         [Range(0f, 1f)]
