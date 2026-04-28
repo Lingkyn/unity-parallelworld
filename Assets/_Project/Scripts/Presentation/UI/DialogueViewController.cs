@@ -4,8 +4,8 @@ using UnityEngine.UIElements;
 namespace ParallelWorld
 {
     /// <summary>
-    /// 玩家对话 UI：与 <see cref="PromptViewController"/> 相同的屏幕定位规则；锚点为当前激活的 Real/Shadow 躯体；
-    /// 世界偏移与竖直视口带使用 <see cref="InteractionConfig.dialogueWorldOffset"/> / <see cref="InteractionConfig.dialogueTopViewport"/>（经 InteractionController 注入）。
+    /// 玩家对话 UI：锚点为当前激活的 Real/Shadow 躯体；
+    /// 位置基于玩家锚点的屏幕投影（X/Y 都跟随玩家移动），并叠加世界偏移与屏幕偏移。
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class DialogueViewController : MonoBehaviour
@@ -18,16 +18,13 @@ namespace ParallelWorld
         private Vector3 _worldOffset = new Vector3(0f, 1f, 0f);
         [SerializeField, Tooltip("提示框中心相对屏幕坐标的偏移（像素），与 PromptViewController 一致")]
         private Vector2 _screenOffset = new Vector2(0f, 20f);
-        [SerializeField, Tooltip("未指定 Config 时的备用竖直视口比例 0~1；有 Config 时用 dialogueTopViewport")]
-        [Range(0f, 1f)]
-        private float _fallbackTopViewport = 0.833f;
 
         private InteractionConfig _config;
         private VisualElement _root;
         private Label _dialogueLabel;
         private bool _wantsVisible;
 
-        /// <summary>由 InteractionController 注入，用于读取 dialogueWorldOffset / dialogueTopViewport</summary>
+        /// <summary>由 InteractionController 注入，用于读取 dialogueWorldOffset</summary>
         public void SetConfig(InteractionConfig config) => _config = config;
 
         private void Awake()
@@ -85,8 +82,26 @@ namespace ParallelWorld
                 return;
 
             Vector3 worldOffset = _config != null ? _config.dialogueWorldOffset : _worldOffset;
-            float topViewport = _config != null ? _config.dialogueTopViewport : _fallbackTopViewport;
-            ProximityPromptLayout.Apply(_root, _camera, body.position, worldOffset, _screenOffset, topViewport);
+            ApplyPlayerAnchoredLayout(body.position, worldOffset, _screenOffset);
+        }
+
+        private void ApplyPlayerAnchoredLayout(Vector3 playerWorldPosition, Vector3 worldOffset, Vector2 screenOffset)
+        {
+            Vector3 anchor = playerWorldPosition + worldOffset;
+            Vector3 screenPos3 = _camera.WorldToScreenPoint(anchor);
+            if (screenPos3.z <= 0f)
+                return;
+
+            // UI Toolkit top-left origin: convert from WorldToScreenPoint's bottom-left origin.
+            float leftPx = screenPos3.x + screenOffset.x;
+            float topPx = (Screen.height - screenPos3.y) + screenOffset.y;
+
+            _root.style.left = leftPx;
+            _root.style.top = topPx;
+            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
+            _root.style.right = StyleKeyword.Auto;
+            _root.style.bottom = StyleKeyword.Auto;
+            _root.style.position = Position.Absolute;
         }
 
         /// <summary>显示对话并每帧跟随当前激活的玩家躯体。</summary>
