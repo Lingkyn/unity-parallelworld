@@ -39,3 +39,12 @@ MonoBehaviour:
       saved? "
   - entryId: dialogue paper end
     promptText: 'Why do I always end up with the worst evaluation? '
+  - entryId: L2 coffee
+    promptText: Only push when shadow overlaps object.
+  - entryId: L2 dialogue anxiety1
+    promptText: "Heart of Anxiety? I should destroy it\u2026 I can\u2019t keep getting
+      overwhelmed by anxiety so easily. "
+  - entryId: L2 dialogue anxiety2
+    promptText: The coffee is poisonous.
+  - entryId: L2 pappercutter
+    promptText: Try cutting the paper with a knife
