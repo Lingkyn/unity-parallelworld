@@ -15,18 +15,12 @@ public class push : MonoBehaviour
     private bool disappearOnContact = true;
     [SerializeField, Tooltip("本物体消失时要出现的物体（将被 SetActive(true)）")]
     private GameObject appearOnDisappear;
-    [SerializeField, Tooltip("本物体消失时要一起出现的物体列表")]
-    private List<GameObject> appearOnDisappearGroup = new List<GameObject>();
     [SerializeField, Tooltip("可选：当关联 puzzle 已完成下降流程后，本物体消失时出现的物体")]
     private GameObject appearOnDisappearAfterPuzzleFinished;
-    [SerializeField, Tooltip("可选：当 puzzle 完成时，本物体消失后一起出现的物体列表")]
-    private List<GameObject> appearOnDisappearAfterPuzzleFinishedGroup = new List<GameObject>();
     [SerializeField, Tooltip("可选：关联 puzzle 控制器（用于判断是否已完成下降）")]
     private puzzle puzzleStateSource;
     [SerializeField, Tooltip("指定碰到这个 Collider 就消失")]
     private Collider disappearTargetCollider;
-    [SerializeField, Tooltip("本物体消失时要一起消失的物体列表")]
-    private List<GameObject> disappearTogetherGroup = new List<GameObject>();
 
     private const float RefreshInterval = 0.5f;
     private const float TouchTolerance = 0.03f;
@@ -255,7 +249,6 @@ public class push : MonoBehaviour
 
         _isDisappeared = true;
         ActivateAppearTarget();
-        DeactivateDisappearGroup();
         gameObject.SetActive(false);
     }
 
@@ -266,32 +259,11 @@ public class push : MonoBehaviour
         if (puzzleFinished && appearOnDisappearAfterPuzzleFinished != null)
         {
             appearOnDisappearAfterPuzzleFinished.SetActive(true);
+            return;
         }
-
-        if (puzzleFinished)
-            SetActiveGroup(appearOnDisappearAfterPuzzleFinishedGroup, true);
 
         if (appearOnDisappear != null)
             appearOnDisappear.SetActive(true);
-
-        SetActiveGroup(appearOnDisappearGroup, true);
-    }
-
-    private void DeactivateDisappearGroup()
-    {
-        SetActiveGroup(disappearTogetherGroup, false);
-    }
-
-    private static void SetActiveGroup(List<GameObject> group, bool active)
-    {
-        if (group == null)
-            return;
-
-        for (int i = 0; i < group.Count; i++)
-        {
-            if (group[i] != null)
-                group[i].SetActive(active);
-        }
     }
 
     private bool IsDisappearTarget(Collider other)

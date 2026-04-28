@@ -14,6 +14,9 @@ namespace ParallelWorld
         [SerializeField] private Camera _camera;
         [SerializeField, Tooltip("提示框中心相对屏幕坐标的偏移（像素）")]
         private Vector2 _screenOffset = new Vector2(0, 20);
+        [SerializeField, Tooltip("未指定 Config 时的备用视口比例 0~1；若 InteractionController 注入 Config 则优先用 Config.promptTopViewport")]
+        [Range(0f, 1f)]
+        private float _fallbackTopViewport = 0.833f;
 
         private InteractionConfig _config;
         private GameObject _currentTarget;
@@ -46,7 +49,7 @@ namespace ParallelWorld
                 Debug.LogWarning("[PromptViewController] 未找到名为 'Prompt' 的 Label，请检查 UIDocument 是否加载 Prompt.uxml");
         }
 
-        /// <summary>由 InteractionController 注入，用于读取 promptOffset</summary>
+        /// <summary>由 InteractionController 注入，用于读取 promptTopViewport</summary>
         public void SetConfig(InteractionConfig config) => _config = config;
 
         private void LateUpdate()
@@ -90,41 +93,20 @@ namespace ParallelWorld
         }
 
         /// <summary>
-        /// 根据物体世界坐标设置 UI 位置（以物体为中心的世界坐标偏移）
+        /// 根据世界坐标设置 UI 位置（World-to-Screen）
         /// </summary>
         public void SetPosition(Vector3 worldPosition, Vector3 worldOffset)
         {
             if (_camera == null || _root == null) return;
 
             _lastWorldOffset = worldOffset;
-            ApplyObjectAnchoredLayout(worldPosition, worldOffset, _screenOffset);
-        }
-
-        private void ApplyObjectAnchoredLayout(Vector3 worldPosition, Vector3 worldOffset, Vector2 screenOffset)
-        {
-            if (_camera == null || _root == null)
-                return;
-
-            Vector3 anchor = worldPosition + worldOffset;
-            Vector3 screenPos = _camera.WorldToScreenPoint(anchor);
-            if (screenPos.z <= 0f)
-                return;
-
-            // UI Toolkit 坐标系：左上角为原点，Y 轴向下
-            float leftPx = screenPos.x + screenOffset.x;
-            float topPx = (Screen.height - screenPos.y) + screenOffset.y;
-
-            _root.style.left = leftPx;
-            _root.style.top = topPx;
-            _root.style.translate = new Translate(Length.Percent(-50), Length.Percent(0));
-            _root.style.right = StyleKeyword.Auto;
-            _root.style.bottom = StyleKeyword.Auto;
-            _root.style.position = Position.Absolute;
+            float topViewport = _config != null ? _config.promptTopViewport : _fallbackTopViewport;
+            ProximityPromptLayout.Apply(_root, _camera, worldPosition, worldOffset, _screenOffset, topViewport);
         }
     }
 
     /// <summary>
-    /// 靠近提示、玩家对话、交互按钮共用的屏幕定位：水平跟随世界锚点投影，竖直由调用方传入的 topViewport 决定。
+    /// 靠近提示、玩家对话、交互按钮共用的屏幕定位：水平跟随世界锚点投影，竖直由调用方传入的 <paramref name="topViewport"/> 决定。
     /// </summary>
     public static class ProximityPromptLayout
     {
