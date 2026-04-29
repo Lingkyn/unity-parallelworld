@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rule:
     spawnInterval: 1
-    maxAliveCount: 5
+    maxAliveCount: 1
     loopSpawn: 1
     startOnEnter: 1
     stopWhenPlayerExit: 0
