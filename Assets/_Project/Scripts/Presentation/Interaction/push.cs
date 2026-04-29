@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -11,22 +12,33 @@ public class push : MonoBehaviour
 {
     [SerializeField, Tooltip("按 D 推动时物体向右移动速度")]
     private float moveRightSpeed = 6f;
+
     [SerializeField, Tooltip("碰到指定目标后让该物体消失")]
     private bool disappearOnContact = true;
+
     [SerializeField, Tooltip("本物体消失时要出现的物体（将被 SetActive(true)）")]
     private GameObject appearOnDisappear;
+
     [SerializeField, Tooltip("本物体消失时要一起出现的物体列表")]
     private List<GameObject> appearOnDisappearGroup = new List<GameObject>();
+
     [SerializeField, Tooltip("可选：当关联 puzzle 已完成下降流程后，本物体消失时出现的物体")]
     private GameObject appearOnDisappearAfterPuzzleFinished;
+
     [SerializeField, Tooltip("可选：当 puzzle 完成时，本物体消失后一起出现的物体列表")]
     private List<GameObject> appearOnDisappearAfterPuzzleFinishedGroup = new List<GameObject>();
+
     [SerializeField, Tooltip("可选：关联 puzzle 控制器（用于判断是否已完成下降）")]
     private puzzle puzzleStateSource;
+
     [SerializeField, Tooltip("指定碰到这个 Collider 就消失")]
     private Collider disappearTargetCollider;
+
     [SerializeField, Tooltip("本物体消失时要一起消失的物体列表")]
     private List<GameObject> disappearTogetherGroup = new List<GameObject>();
+
+    [SerializeField, Tooltip("对应右上角宝石UI，本物体消失时隐藏")]
+    private GameObject uiGemToHide;
 
     private const float RefreshInterval = 0.5f;
     private const float TouchTolerance = 0.03f;
@@ -50,6 +62,7 @@ public class push : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _selfCollider = GetComponent<Collider>();
+
         if (_rb != null)
             _rb.interpolation = RigidbodyInterpolation.Interpolate;
 
@@ -84,6 +97,7 @@ public class push : MonoBehaviour
 
         if (touchedBody != null)
             _latchedBody = touchedBody;
+
         _pushLatchExpireTime = Time.time + Mathf.Max(0.01f, SustainedPushGraceTime);
 
         float deltaX = moveRightSpeed * Time.fixedDeltaTime;
@@ -102,7 +116,9 @@ public class push : MonoBehaviour
         var players = GameObject.FindGameObjectsWithTag(Tags.Player);
         foreach (var player in players)
         {
-            if (player == null) continue;
+            if (player == null)
+                continue;
+
             _playerBodies.AddRange(player.GetComponentsInChildren<CharacterController>(true));
         }
     }
@@ -159,9 +175,13 @@ public class push : MonoBehaviour
         Vector2 playerXY = new Vector2(playerPos.x, playerPos.y);
         Vector3 closest = _selfCollider.ClosestPoint(playerPos);
         Vector2 closestXY = new Vector2(closest.x, closest.y);
-        float planarDistance = Vector2.Distance(playerXY, closestXY);
 
-        float allowedDistance = Mathf.Max(0.01f, ShadowProxyPlanarDistance * Mathf.Max(1f, planarDistanceMultiplier));
+        float planarDistance = Vector2.Distance(playerXY, closestXY);
+        float allowedDistance = Mathf.Max(
+            0.01f,
+            ShadowProxyPlanarDistance * Mathf.Max(1f, planarDistanceMultiplier)
+        );
+
         return planarDistance <= allowedDistance;
     }
 
@@ -184,14 +204,15 @@ public class push : MonoBehaviour
             body.transform.position,
             body.transform.rotation,
             out _,
-            out _);
+            out _
+        );
 
         if (overlapped)
             return true;
 
-        // ComputePenetration 在仅边缘接触时可能返回 false，这里用轻微扩张的 bounds 兜底。
         Bounds expandedBodyBounds = body.bounds;
         expandedBodyBounds.Expand(Mathf.Max(0.001f, TouchTolerance));
+
         return _selfCollider.bounds.Intersects(expandedBodyBounds);
     }
 
@@ -201,6 +222,7 @@ public class push : MonoBehaviour
         if (Keyboard.current != null)
             return Keyboard.current.dKey.isPressed;
 #endif
+
         return Input.GetKey(KeyCode.D);
     }
 
@@ -254,8 +276,31 @@ public class push : MonoBehaviour
             return;
 
         _isDisappeared = true;
+
+        Debug.Log("【宝石触发】满足消失条件");
+
+        if (uiGemToHide != null)
+        {
+            uiGemToHide.SetActive(false);
+            Debug.Log("【宝石触发】UI Gem 已隐藏，准备通知 SceneJumpManager 跳转");
+
+            if (SceneJumpManager.Instance != null)
+            {
+                SceneJumpManager.Instance.JumpToIntroScene();
+            }
+            else
+            {
+                Debug.LogError("【宝石触发】找不到 SceneJumpManager，请确认场景中有挂载 SceneJumpManager.cs 的物体");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("【宝石触发】uiGemToHide 没有赋值，因此不会执行 UI 隐藏后的跳转");
+        }
+
         ActivateAppearTarget();
         DeactivateDisappearGroup();
+
         gameObject.SetActive(false);
     }
 
@@ -264,9 +309,7 @@ public class push : MonoBehaviour
         bool puzzleFinished = puzzleStateSource != null && puzzleStateSource.IsSequenceFinished;
 
         if (puzzleFinished && appearOnDisappearAfterPuzzleFinished != null)
-        {
             appearOnDisappearAfterPuzzleFinished.SetActive(true);
-        }
 
         if (puzzleFinished)
             SetActiveGroup(appearOnDisappearAfterPuzzleFinishedGroup, true);

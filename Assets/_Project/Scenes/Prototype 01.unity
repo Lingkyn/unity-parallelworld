@@ -188173,7 +188173,7 @@ Transform:
   m_GameObject: {fileID: 619467720}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 102.7, y: 5.525, z: -0.61392}
+  m_LocalPosition: {x: 105.18, y: 5.525, z: -0.61392}
   m_LocalScale: {x: 0.58041924, y: 0.58041924, z: 0.58041924}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -188249,8 +188249,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dragCamera: {fileID: 255777111}
   dragMode: 0
-  minLimit: 113.32
-  maxLimit: 123
+  minLimit: 102.7
+  maxLimit: 111.23
   clickColliderRadius: 0.5
   clampSpace: 1
 --- !u!65 &619467725
@@ -211644,6 +211644,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1386922318}
   - {fileID: 1517928126}
   - {fileID: 1745933775}
   - {fileID: 1490337701}
@@ -251385,19 +251386,19 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1386922314}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2.4, y: 2.4, z: 2.4}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1818941988}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 903110712}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 960, y: 540}
+  m_SizeDelta: {x: 799.99994, y: 449.99997}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1387159072
 GameObject:
   m_ObjectHideFlags: 0
@@ -390031,7 +390032,7 @@ PrefabInstance:
       objectReference: {fileID: 1296927303}
     - target: {fileID: 2613119738471364271, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.58
+      value: -7.9
       objectReference: {fileID: 0}
     - target: {fileID: 2613119738471364271, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -390260,7 +390261,6 @@ SceneRoots:
   - {fileID: 1640544636}
   - {fileID: 1664667411}
   - {fileID: 134437200}
-  - {fileID: 1386922318}
   - {fileID: 1373780800}
   - {fileID: 1492424205}
   - {fileID: 820078002}

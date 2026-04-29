@@ -38,6 +38,8 @@ public class BreakOnShadowCover : MonoBehaviour
     private GameObject showOnBreak;
     [SerializeField, Tooltip("碎裂特效预制体（可选）")]
     private GameObject breakVfxPrefab;
+    [SerializeField, Tooltip("右上角对应的宝石UI，碎裂时隐藏")]
+    private GameObject uiGemToHide;
 
     private float _coverTimer;
     private bool _broken;
@@ -51,6 +53,7 @@ public class BreakOnShadowCover : MonoBehaviour
     {
         if (gemCollider == null)
             gemCollider = GetComponent<Collider>();
+
         if (gemRenderer == null)
             gemRenderer = GetComponentInChildren<Renderer>(true);
 
@@ -89,6 +92,7 @@ public class BreakOnShadowCover : MonoBehaviour
 
         _isCurrentlyCovered = true;
         _coverTimer += Time.deltaTime;
+
         if (_coverTimer >= Mathf.Max(0f, requiredCoverTime))
         {
             _hasMetCoverCondition = true;
@@ -168,6 +172,7 @@ public class BreakOnShadowCover : MonoBehaviour
 
         bool overlapX = gemBounds.min.x <= shadowBounds.max.x && gemBounds.max.x >= shadowBounds.min.x;
         bool overlapY = gemBounds.min.y <= shadowBounds.max.y && gemBounds.max.y >= shadowBounds.min.y;
+
         return overlapX && overlapY;
     }
 
@@ -175,6 +180,7 @@ public class BreakOnShadowCover : MonoBehaviour
     {
         if (gemCollider != null)
             return gemCollider.bounds;
+
         if (gemRenderer != null)
             return gemRenderer.bounds;
 
@@ -188,17 +194,21 @@ public class BreakOnShadowCover : MonoBehaviour
         _autoShadowRenderers.Clear();
 
         SpriteShadow[] shadows = FindObjectsOfType<SpriteShadow>(true);
+
         for (int i = 0; i < shadows.Length; i++)
         {
             SpriteShadow s = shadows[i];
+
             if (s == null || s.lightEntries == null)
                 continue;
+
             if (!IsUnderShadowSourceRoot(s.transform))
                 continue;
 
             for (int j = 0; j < s.lightEntries.Count; j++)
             {
                 SpriteShadow.LightShadowEntry entry = s.lightEntries[j];
+
                 if (entry == null || entry.shadowObject == null)
                     continue;
 
@@ -236,6 +246,9 @@ public class BreakOnShadowCover : MonoBehaviour
 
         if (showOnBreak != null)
             showOnBreak.SetActive(true);
+
+        if (uiGemToHide != null)
+            uiGemToHide.SetActive(false);
 
         SetGemVisible(false);
     }
