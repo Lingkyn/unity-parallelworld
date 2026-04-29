@@ -13,11 +13,17 @@ namespace ParallelWorld
         public float speed = 8f;
 
         [Header("平面约束")]
-        [Tooltip("开启后将角色活动躯体的世界坐标 Z 固定为 fixedZ，仅在 XY 平面移动")]
-        public bool lockZAxis = false;
+        [Tooltip("开启后将 RealPlayer 的世界坐标 Z 固定为 realFixedZ")]
+        public bool lockRealZAxis = false;
 
-        [Tooltip("当 lockZAxis 开启时生效：活动躯体的固定世界坐标 Z")]
-        public float fixedZ = 0f;
+        [Tooltip("当 lockRealZAxis 开启时生效：RealPlayer 的固定世界坐标 Z")]
+        public float realFixedZ = 0f;
+
+        [Tooltip("开启后将 ShadowPlayer 的世界坐标 Z 固定为 shadowFixedZ")]
+        public bool lockShadowZAxis = false;
+
+        [Tooltip("当 lockShadowZAxis 开启时生效：ShadowPlayer 的固定世界坐标 Z")]
+        public float shadowFixedZ = 5f;
 
         [Header("重力与跳跃")]
         [Tooltip("重力加速度")]

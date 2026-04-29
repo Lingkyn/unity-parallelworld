@@ -104,8 +104,6 @@ namespace ParallelWorld
             Vector3 velocity = result.Velocity * dt;
 
             activeController.Move(velocity);
-            ApplyFixedZIfNeeded(activeTransform);
-
             SyncXYAndParent(activeTransform);
             UpdateRunningAnimation(moveIntent);
             UpdateJumpAnimation(jumpPressed);
@@ -155,25 +153,50 @@ namespace ParallelWorld
             if (realPlayer == null || shadowPlayer == null) return;
 
             Vector3 activePos = activeTransform.position;
-            Transform inactive = activeTransform == realPlayer ? shadowPlayer : realPlayer;
+            bool activeIsReal = activeTransform == realPlayer;
+            ResolveBodyZ(activePos.z, activeIsReal, out float realZ, out float shadowZ);
 
-            if (activeTransform == realPlayer)
-                inactive.position = new Vector3(activePos.x, activePos.y, activePos.z + shadowZOffset);
-            else
-                inactive.position = new Vector3(activePos.x, activePos.y, activePos.z - shadowZOffset);
-
-            transform.position = new Vector3(activePos.x, activePos.y, activeTransform == realPlayer ? activePos.z : activePos.z - shadowZOffset);
+            transform.position = new Vector3(activePos.x, activePos.y, realZ);
             realPlayer.localPosition = Vector3.zero;
-            shadowPlayer.localPosition = new Vector3(0f, 0f, shadowZOffset);
+            shadowPlayer.localPosition = new Vector3(0f, 0f, shadowZ - realZ);
         }
 
-        private void ApplyFixedZIfNeeded(Transform activeTransform)
+        private void ResolveBodyZ(float activeZ, bool activeIsReal, out float realZ, out float shadowZ)
         {
-            if (activeTransform == null || config == null || !config.lockZAxis) return;
+            bool lockReal = config != null && config.lockRealZAxis;
+            bool lockShadow = config != null && config.lockShadowZAxis;
 
-            Vector3 pos = activeTransform.position;
-            if (!Mathf.Approximately(pos.z, config.fixedZ))
-                activeTransform.position = new Vector3(pos.x, pos.y, config.fixedZ);
+            if (lockReal && lockShadow)
+            {
+                realZ = config.realFixedZ;
+                shadowZ = config.shadowFixedZ;
+                return;
+            }
+
+            if (lockReal)
+            {
+                realZ = config.realFixedZ;
+                shadowZ = realZ + shadowZOffset;
+                return;
+            }
+
+            if (lockShadow)
+            {
+                shadowZ = config.shadowFixedZ;
+                realZ = shadowZ - shadowZOffset;
+                return;
+            }
+
+            if (activeIsReal)
+            {
+                realZ = activeZ;
+                shadowZ = realZ + shadowZOffset;
+            }
+            else
+            {
+                shadowZ = activeZ;
+                realZ = shadowZ - shadowZOffset;
+            }
         }
 
         private MovementParams BuildParams()

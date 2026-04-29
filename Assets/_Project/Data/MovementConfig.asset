@@ -13,8 +13,12 @@ MonoBehaviour:
   m_Name: MovementConfig
   m_EditorClassIdentifier: 
   speed: 8
-  lockZAxis: 1
-  fixedZ: -0.03999999
+  lockZAxis: 0
+  fixedZ: 0
+  lockRealZAxis: 1
+  realFixedZ: 0
+  lockShadowZAxis: 1
+  shadowFixedZ: 5
   gravity: 25
   jumpForce: 11
   airControl: 0.8
