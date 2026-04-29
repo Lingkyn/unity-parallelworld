@@ -16,6 +16,11 @@ namespace ParallelWorld
         [SerializeField] private InputAdapter inputAdapter;
         [SerializeField, Tooltip("默认显示的躯体")]
         private PlayerForm defaultForm = PlayerForm.Real;
+        [Header("关卡规则")]
+        [SerializeField, Tooltip("是否锁定玩家形态（锁定后忽略切换输入与外部切换请求）")]
+        private bool lockPlayerForm = false;
+        [SerializeField, Tooltip("锁定时保持的玩家形态")]
+        private PlayerForm lockedForm = PlayerForm.Shadow;
 
         private PlayerForm _currentForm;
 
@@ -43,7 +48,7 @@ namespace ParallelWorld
             if (inputAdapter == null)
                 Debug.LogWarning("[PlayerToggleController] 未找到 InputAdapter");
 
-            _currentForm = defaultForm;
+            _currentForm = lockPlayerForm ? lockedForm : defaultForm;
             ApplyForm();
 
             ServiceLocator.Register<IPlayerFormSwitcher>(this);
@@ -52,6 +57,9 @@ namespace ParallelWorld
         private void Update()
         {
             if (inputAdapter == null || !inputAdapter.GetTogglePlayerPressed())
+                return;
+
+            if (lockPlayerForm)
                 return;
 
             var command = new TogglePlayerFormCommand(this);
@@ -63,6 +71,13 @@ namespace ParallelWorld
         /// </summary>
         public void Toggle()
         {
+            if (lockPlayerForm)
+            {
+                // 严格锁定：无论输入或外部命令，锁定期间都维持 lockedForm
+                SetActiveForm(lockedForm);
+                return;
+            }
+
             PlayerForm previous = _currentForm;
             _currentForm = _currentForm == PlayerForm.Real ? PlayerForm.Shadow : PlayerForm.Real;
             ApplyForm();
@@ -76,7 +91,7 @@ namespace ParallelWorld
         public void SetActiveForm(PlayerForm form)
         {
             PlayerForm previous = _currentForm;
-            _currentForm = form;
+            _currentForm = lockPlayerForm ? lockedForm : form;
             ApplyForm();
             if (previous != _currentForm)
                 EventBus.PublishPlayerFormChanged(previous, _currentForm);
