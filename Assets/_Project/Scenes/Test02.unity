@@ -25175,6 +25175,9 @@ MonoBehaviour:
   fixedZ: -18
   minY: 0.8
   focusY: 3
+  lockLightState: 1
+  lockedLightOn: 1
+  initialLightOn: 0
 --- !u!4 &1565771781
 Transform:
   m_ObjectHideFlags: 0
@@ -29599,11 +29602,11 @@ PrefabInstance:
       objectReference: {fileID: 1792320181}
     - target: {fileID: 2613119738471364271, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 110
+      value: -8.47
       objectReference: {fileID: 0}
     - target: {fileID: 2613119738471364271, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 1.04
       objectReference: {fileID: 0}
     - target: {fileID: 2613119738471364271, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -29661,6 +29664,14 @@ PrefabInstance:
       propertyPath: m_RootBone
       value: 
       objectReference: {fileID: 1792320181}
+    - target: {fileID: 5071480306355736734, guid: fde72119647646b42ae249d6793eecc1, type: 3}
+      propertyPath: lockPlayerForm
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5234781036854731088, guid: fde72119647646b42ae249d6793eecc1, type: 3}
+      propertyPath: lockLightState
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5558683570142772573, guid: fde72119647646b42ae249d6793eecc1, type: 3}
       propertyPath: m_RootBone
       value: 

@@ -12,6 +12,11 @@ public class LightController : MonoBehaviour
 
     [Header("Focus Lock")]
     public float focusY = 3f;
+    
+    [Header("Level Rule")]
+    [SerializeField] private bool lockLightState = false;
+    [SerializeField] private bool lockedLightOn = true;
+    [SerializeField] private bool initialLightOn = false;
 
     public static System.Action<bool> OnLightToggle;
 
@@ -19,9 +24,7 @@ public class LightController : MonoBehaviour
 
     void Start()
     {
-        
-        if (spotLightObject)
-            spotLightObject.SetActive(false);
+        ApplyLightState(lockLightState ? lockedLightOn : initialLightOn);
     }
 
     void LateUpdate()
@@ -31,10 +34,11 @@ public class LightController : MonoBehaviour
         
         if (Input.GetKeyDown(KeyCode.X))
         {
+            if (lockLightState)
+                return;
+
             isLightOn = !isLightOn;
-            spotLightObject.SetActive(isLightOn);
-            
-            OnLightToggle?.Invoke(isLightOn);
+            ApplyLightState(isLightOn);
         }
 
         
@@ -57,5 +61,14 @@ public class LightController : MonoBehaviour
         
         Vector3 focusPoint = new Vector3(worldPos.x, focusY, 0f);
         transform.LookAt(focusPoint);
+    }
+
+    private void ApplyLightState(bool turnOn)
+    {
+        isLightOn = turnOn;
+        if (spotLightObject)
+            spotLightObject.SetActive(isLightOn);
+
+            OnLightToggle?.Invoke(isLightOn);
     }
 }
