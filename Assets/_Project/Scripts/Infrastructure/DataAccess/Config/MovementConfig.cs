@@ -12,6 +12,13 @@ namespace ParallelWorld
         [Tooltip("地面移动速度")]
         public float speed = 8f;
 
+        [Header("平面约束")]
+        [Tooltip("开启后将角色活动躯体的世界坐标 Z 固定为 fixedZ，仅在 XY 平面移动")]
+        public bool lockZAxis = false;
+
+        [Tooltip("当 lockZAxis 开启时生效：活动躯体的固定世界坐标 Z")]
+        public float fixedZ = 0f;
+
         [Header("重力与跳跃")]
         [Tooltip("重力加速度")]
         public float gravity = 20f;

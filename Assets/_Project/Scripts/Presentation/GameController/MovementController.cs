@@ -104,6 +104,7 @@ namespace ParallelWorld
             Vector3 velocity = result.Velocity * dt;
 
             activeController.Move(velocity);
+            ApplyFixedZIfNeeded(activeTransform);
 
             SyncXYAndParent(activeTransform);
             UpdateRunningAnimation(moveIntent);
@@ -164,6 +165,15 @@ namespace ParallelWorld
             transform.position = new Vector3(activePos.x, activePos.y, activeTransform == realPlayer ? activePos.z : activePos.z - shadowZOffset);
             realPlayer.localPosition = Vector3.zero;
             shadowPlayer.localPosition = new Vector3(0f, 0f, shadowZOffset);
+        }
+
+        private void ApplyFixedZIfNeeded(Transform activeTransform)
+        {
+            if (activeTransform == null || config == null || !config.lockZAxis) return;
+
+            Vector3 pos = activeTransform.position;
+            if (!Mathf.Approximately(pos.z, config.fixedZ))
+                activeTransform.position = new Vector3(pos.x, pos.y, config.fixedZ);
         }
 
         private MovementParams BuildParams()

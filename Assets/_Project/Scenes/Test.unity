@@ -8913,8 +8913,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dragCamera: {fileID: 255777111}
-  minX: 102.3
-  maxX: 112.13
+  dragMode: 0
+  minLimit: 113.32
+  maxLimit: 123
   clickColliderRadius: 0.5
   clampSpace: 1
 --- !u!65 &619467725
@@ -26573,8 +26574,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dragCamera: {fileID: 255777111}
-  minX: 102.3
-  maxX: 112.13
+  dragMode: 0
+  minLimit: 113.32
+  maxLimit: 123
   clickColliderRadius: 0.5
   clampSpace: 1
 --- !u!212 &1751287306
