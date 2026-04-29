@@ -19,3 +19,5 @@ MonoBehaviour:
     order: 1
   - checkpointId: shredder
     order: 2
+  - checkpointId: file
+    order: 3

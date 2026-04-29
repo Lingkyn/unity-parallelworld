@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/_Project/Scenes/Main interface.unity
+    path: "Assets/_Project/Scenes/\xD7 Main interface.unity"
     guid: 842046f01ce7b5342b6ca508683f5409
   - enabled: 1
     path: Assets/_Project/Scenes/UI Anim Test.unity
