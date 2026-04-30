@@ -15,8 +15,8 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 769
-  promptOffset: {x: -1.2, y: -2, z: 0}
-  promptTopViewport: 0.64
+  promptOffset: {x: -0.5, y: -1.7, z: 0.08}
+  promptTopViewport: 0.76
   dialogueWorldOffset: {x: -0.13, y: 2.73, z: 0}
   dialogueTopViewport: 0.64
   defaultPromptText: "\u6309\u3010X\u3011\u5F00\u542F\u4E3B\u5149"
