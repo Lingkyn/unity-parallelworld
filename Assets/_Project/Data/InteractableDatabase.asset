@@ -31,9 +31,8 @@ MonoBehaviour:
     promptText: "Do I need to unplug it? I won\u2019t be asleep for long\u2014I was
       planning to get more work done when I wake up. "
   - entryId: dialogue paper
-    promptText: "This is my mid-year performance review. I was forced to take the
-      C rating for the team, and I\u2019ve felt guilty ever since. I kept it to remind
-      myself to do better. "
+    promptText: 'This is my mid-year performance review. I was forced to take the
+      C rating for the team.I kept it to remind myself to do better. '
   - entryId: dialogue plug end
     promptText: "Alright\u2026 but what if there are files that haven\u2019t been
       saved? "
